@@ -1,12 +1,16 @@
 import Navbar from './navbar'
 import Footer from './footer'
+import {useState} from "react"
 
 export default function Layout({ children }) {
-  return (
-    <>
-      <Navbar />
-      <main>{children}</main>
-      <Footer />
-    </>
-  )
+    const {user, setUser} = useState({email: undefined, signOut: undefined});
+
+
+    return (
+        <>
+        <Navbar user={user}/>
+        <main>{children}</main>
+        <Footer />
+        </>
+    )
 }
