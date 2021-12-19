@@ -186,7 +186,7 @@ export default function Navbar() {
                         </span>
                       ) : (
                         <span>
-                          Don't have an account?{" "}
+                          Don&apos;t have an account?{" "}
                           <a
                             className="underline decoration-primary"
                             onClick={() => setSigningUp(true)}
