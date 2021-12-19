@@ -101,13 +101,18 @@ export default function Navbar() {
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20  m-10 text-center sm:block sm:p-0">
             <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
 
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full p-10">
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full p-10">
               <Dialog.Title className="text-primary bold text-xl text-center">
                 {signingUp ? <span>Create Account</span> : <span>Log In</span>}
               </Dialog.Title>
 
               <Dialog.Description>
-                <div className="p-10">
+                <div className="m-10">
+                  <p className="text-sm text-center">
+                    {signingUp
+                      ? "Create an account to acquire and share Peerbots content."
+                      : "Sign in to acquire and share Peerbots content."}
+                  </p>
                   <div className="m-5">
                     <label
                       className="relative text-gray-400 focus-within:text-gray-600 block"
@@ -168,17 +173,17 @@ export default function Navbar() {
 
                   <div className="text-center m-5">
                     <button
-                      className="bg-primary text-white p-2 rounded"
+                      className="btn-primary"
                       onClick={signInWithUserInfo}
                     >
                       {signingUp ? "Create Account" : "Sign In"}
                     </button>
-                    <div className="text-center text-sm mt-3 mb-10">
+                    <div className="text-center text-sm mt-3 mb-10 text-gray-500">
                       {signingUp ? (
                         <span>
                           Already have an account?{" "}
                           <a
-                            className="underline decoration-primary"
+                            className="underline decoration-gray-600 hover:text-black cursor-pointer"
                             onClick={() => setSigningUp(false)}
                           >
                             Log In
@@ -188,7 +193,7 @@ export default function Navbar() {
                         <span>
                           Don&apos;t have an account?{" "}
                           <a
-                            className="underline decoration-primary"
+                            className="underline decoration-gray-600 hover:text-black cursor-pointer"
                             onClick={() => setSigningUp(true)}
                           >
                             Sign Up
@@ -198,14 +203,14 @@ export default function Navbar() {
                     </div>
                   </div>
 
-                  <div className="text-center">
+                  <div className="text-center text-sm text-gray-500">
                     {signingUp ? (
                       <span>Sign up with</span>
                     ) : (
                       <span>Sign in with</span>
                     )}
                     <svg
-                      className="text-center block m-auto"
+                      className="text-center block m-auto cursor-pointer"
                       viewBox="0 0 24 24"
                       width="24"
                       height="24"
@@ -271,7 +276,7 @@ export default function Navbar() {
                 setSigningUp(true);
                 setModalShown(true);
               }}
-              className="bg-primary hover:bg-dark-primary text-black font-bold py-2 px-4 rounded"
+              className="btn-primary"
             >
               Sign Up
             </button>
