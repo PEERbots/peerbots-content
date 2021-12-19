@@ -1,16 +1,17 @@
 import Navbar from './navbar'
 import Footer from './footer'
-import {useState} from "react"
+import { FirebaseAuthProvider } from '../auth'
+
+
 
 export default function Layout({ children }) {
-    const {user, setUser} = useState({email: undefined, signOut: undefined});
-
-
     return (
         <>
-        <Navbar user={user}/>
-        <main>{children}</main>
-        <Footer />
+        <FirebaseAuthProvider>
+            <Navbar/>
+                {children}
+            <Footer />
+        </FirebaseAuthProvider>
         </>
     )
 }
