@@ -31,7 +31,12 @@ export default function ContentCard({ content }) {
               {content.price == 0 ? (
                 <span className="uppercase">Free</span>
               ) : (
-                <span>${content.price}</span>
+                <span>
+                  {new Intl.NumberFormat("en-US", {
+                    style: "currency",
+                    currency: "USD",
+                  }).format(content.price)}
+                </span>
               )}
             </div>
             <div>
