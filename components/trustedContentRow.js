@@ -35,7 +35,8 @@ export default function TrustedContentRow() {
   return (
     <>
       <ContentRow content={trustedContent}>
-        <h3>Trusted Content</h3>
+        <h3 className="text-xl font-bold">Trusted Content</h3>
+        <p className="text-sm">Content trusted by the Peerbots team.</p>
       </ContentRow>
     </>
   );

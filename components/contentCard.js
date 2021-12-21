@@ -1,8 +1,8 @@
 export default function ContentCard({ content }) {
   return (
     <>
-      <div className="border-r border-b border-l border-gray-400 lg:border-l-0 lg:border-t lg:border-gray-400 bg-white shadow-lg rounded-b lg:rounded-b-none lg:rounded-r p-4 flex flex-col justify-between leading-normal">
-        <div className="space-y-1">
+      <div className="bg-white shadow-lg rounded p-4 w-72">
+        <div className="space-y-1 w-full">
           <div className=" flex content-between">
             <div>
               <span className="text-gray-900 text-xl">{content.name}</span>

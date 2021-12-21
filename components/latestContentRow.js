@@ -35,7 +35,7 @@ export default function LatestContentRow() {
   return (
     <>
       <ContentRow content={latestContent}>
-        <h3>Latest Content</h3>
+        <h3 className="text-xl font-bold">Latest Content</h3>
       </ContentRow>
     </>
   );
