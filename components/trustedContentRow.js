@@ -16,6 +16,7 @@ export default function TrustedContentRow() {
   const fetchTrustedContent = async () => {
     const q = query(
       collection(db, "content"),
+      where("public", "==", true),
       where("trusted", "==", true),
       limit(10)
     );
