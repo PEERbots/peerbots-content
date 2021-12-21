@@ -10,6 +10,7 @@ import { useFirebaseAuth } from "../auth";
 import { useState, useRef } from "react";
 import firebaseApp from "../firebase";
 import { Dialog } from "@headlessui/react";
+import logo from "../public/peerbots_logo.png";
 
 export default function Navbar() {
   const user = useFirebaseAuth();
@@ -246,45 +247,61 @@ export default function Navbar() {
         </Dialog>
       </div>
 
-      {user.user ? (
-        <>
-          <div>
-            Signed in as: {} {user.user.displayName}
-            <button
-              onClick={signOutOfFirebase}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Sign Out
-            </button>
-          </div>
-        </>
-      ) : (
-        <>
-          <div className="justify-center">
-            <span>
-              <a
-                onClick={() => {
-                  setSigningUp(false);
-                  setModalShown(true);
-                }}
-              >
-                Sign In
-              </a>
-            </span>
-            <button
-              onClick={() => {
-                setSigningUp(true);
-                setModalShown(true);
-              }}
-              className="btn-primary"
-            >
-              Sign Up
-            </button>
-          </div>
-        </>
-      )}
+      {/* The Entire Navbar */}
+      <nav>
+        <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+          <div className="relative flex items-center justify-between h-16">
+            <div className="absolute inset-y-0 left-0 flex items-center">
+              {/* The Left Side */}
+              <div>
+                <img src="peerbots_logo.png" alt="Peerbots Logo" />
+              </div>
+              <div>Search goes here</div>
+            </div>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+              {/* The Right Side */}
 
-      <div>This is the navbar</div>
+              {user.user ? (
+                <>
+                  <div>
+                    Signed in as: {} {user.user.displayName}
+                    <button
+                      onClick={signOutOfFirebase}
+                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="justify-center">
+                    <span>
+                      <a
+                        onClick={() => {
+                          setSigningUp(false);
+                          setModalShown(true);
+                        }}
+                      >
+                        Sign In
+                      </a>
+                    </span>
+                    <button
+                      onClick={() => {
+                        setSigningUp(true);
+                        setModalShown(true);
+                      }}
+                      className="btn-primary"
+                    >
+                      Sign Up
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </nav>
     </>
   );
 }
