@@ -12,22 +12,18 @@ const LatestContentContext = createContext();
 
 export const LatestContentProvider = ({ children }) => {
   const [latestContent, setLatestContent] = useState([]);
+  const db = getFirestore(firebaseApp);
+  const fetchLatestContent = async () => {
+    const q = query(collection(db, "content"), where("public", "==", true));
+    const data = await getDocs(q);
+    data.forEach((doc) => {
+      console.log(doc.data());
+      setLatestContent([...latestContent, { id: doc.id, data: doc.data() }]);
+    });
+  };
 
   useEffect(() => {
-    if (latestContent.length == 0) {
-      const db = getFirestore(firebaseApp);
-      const q = query(collection(db, "content"), where("public", "==", true));
-      getDocs(q).then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-          // doc.data() is never undefined for query doc snapshots
-          console.log(doc.id, " => ", doc.data());
-          setLatestContent([
-            ...latestContent,
-            { id: doc.id, data: doc.data() },
-          ]);
-        });
-      });
-    }
+    fetchLatestContent();
   }, []);
 
   return (

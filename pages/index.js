@@ -15,9 +15,9 @@ export default function Home() {
       </Head>
       <div>
         <div>
-          <LatestContentProvider>
-            <LatestContentRow />
-          </LatestContentProvider>
+          {/* <LatestContentProvider> */}
+          <LatestContentRow />
+          {/* </LatestContentProvider> */}
         </div>
       </div>
     </div>
