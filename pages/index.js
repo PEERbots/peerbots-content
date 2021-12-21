@@ -1,6 +1,6 @@
 import Head from "next/head";
-import { LatestContentProvider } from "../providers/latestContent";
 import LatestContentRow from "../components/latestContentRow";
+import TrustedContentRow from "../components/trustedContentRow";
 
 export default function Home() {
   return (
@@ -15,9 +15,10 @@ export default function Home() {
       </Head>
       <div>
         <div>
-          {/* <LatestContentProvider> */}
+          <TrustedContentRow />
+        </div>
+        <div>
           <LatestContentRow />
-          {/* </LatestContentProvider> */}
         </div>
       </div>
     </div>

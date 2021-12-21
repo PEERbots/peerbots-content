@@ -10,32 +10,32 @@ import {
 } from "firebase/firestore";
 import ContentRow from "./contentRow";
 
-export default function LatestContentRow() {
-  const [latestContent, setLatestContent] = useState([]);
+export default function TrustedContentRow() {
+  const [trustedContent, setTrustedContent] = useState([]);
   const db = getFirestore(firebaseApp);
-  const fetchLatestContent = async () => {
+  const fetchTrustedContent = async () => {
     const q = query(
       collection(db, "content"),
-      where("public", "==", true),
+      where("trusted", "==", true),
       limit(10)
     );
     const data = await getDocs(q);
-    const newLatestContent = data.docs.map((doc) => {
+    const newTrustedContent = data.docs.map((doc) => {
       return {
         id: doc.id,
         data: doc.data(),
       };
     });
-    setLatestContent(newLatestContent);
+    setTrustedContent(newTrustedContent);
   };
 
   useEffect(() => {
-    fetchLatestContent();
+    fetchTrustedContent();
   }, []);
   return (
     <>
-      <ContentRow content={latestContent}>
-        <h3>Latest Content</h3>
+      <ContentRow content={trustedContent}>
+        <h3>Trusted Content</h3>
       </ContentRow>
     </>
   );
