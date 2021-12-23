@@ -6,6 +6,7 @@ import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
 } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 import { useState, useRef } from "react";
 import { useFirebaseAuth } from "../auth";
 
