@@ -14,6 +14,8 @@ import ContentCard from "./contentCard";
 export default function ContentRow({ content, children }) {
   const [authors, setAuthors] = useState([]);
   const [ratings, setRatings] = useState([]);
+  const [tags, setTags] = useState([]);
+
   const db = getFirestore(firebaseApp);
   const fetchContentRowDetails = async () => {
     if (content && content.length > 0) {
@@ -34,6 +36,32 @@ export default function ContentRow({ content, children }) {
         };
       });
       setAuthors(authorsFromDb);
+
+      const tagsIds = content
+        .map((doc) => {
+          return doc.data.tags.flat().map((tag) => {
+            return tag.id;
+          });
+        })
+        .flat();
+
+      console.log("All tags", tagsIds);
+
+      if (tagsIds.length > 0) {
+        const tagsQuery = query(
+          collection(db, "tags"),
+          where(documentId(), "in", tagsIds)
+        );
+
+        const tagsData = await getDocs(tagsQuery);
+        const tagsFromDb = tagsData.docs.map((doc) => {
+          return {
+            id: doc.id,
+            data: doc.data(),
+          };
+        });
+        setTags(tagsFromDb);
+      }
 
       const contentReferences = content.map((contentItem) => {
         return doc(collection(db, "content"), contentItem.id);
@@ -100,6 +128,13 @@ export default function ContentRow({ content, children }) {
                     return rating.id == eachContent.id;
                   })[0]
                 }
+                tags={tags.filter((tag) => {
+                  return eachContent.data.tags
+                    .map((t) => {
+                      return t.id;
+                    })
+                    .includes(tag.id);
+                })}
               />
             ))}
         </div>

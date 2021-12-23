@@ -1,4 +1,4 @@
-export default function ContentCard({ content, author, rating }) {
+export default function ContentCard({ content, author, rating, tags }) {
   return (
     <>
       <div className="bg-white shadow-lg rounded p-4 w-72">
@@ -104,7 +104,18 @@ export default function ContentCard({ content, author, rating }) {
               <a>Read more...</a>
             </p>
           </div>
-          <div>Tags</div>
+          <div>
+            {tags &&
+              tags.map((eachTag) => {
+                <>
+                  <span>A</span>
+                  <span className="bg-accent-two text-white">
+                    {eachTag.data.name}
+                  </span>
+                  ;
+                </>;
+              })}
+          </div>
           <div className="flex items-center justify-between">
             <div className="text-gray-900 text-sm leading-none">
               {content.price == 0 ? (
