@@ -29,14 +29,14 @@ export default function ContentPage() {
       const content = await getDoc(contentRef);
 
       if (content.exists()) {
-        const contentInfo = content.data();
-        setContentInfo(contentInfo);
-        const authorRef = doc(db, "users", contentInfo.owner.id);
+        const contentInfoFromDb = content.data();
+        setContentInfo(contentInfoFromDb);
+        const authorRef = doc(db, "users", contentInfoFromDb.owner.id);
         const author = await getDoc(authorRef);
         const authorInfo = author.data();
         setAuthor(authorInfo);
 
-        const tagsIds = contentInfo.tags.map((tag) => {
+        const tagsIds = contentInfoFromDb.tags.map((tag) => {
           return tag.id;
         });
         const tagsQuery = query(
