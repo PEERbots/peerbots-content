@@ -1,4 +1,5 @@
-export default function ContentCard({ content }) {
+export default function ContentCard({ content, author }) {
+  console.log(author);
   return (
     <>
       <div className="bg-white shadow-lg rounded p-4 w-72">
@@ -9,15 +10,26 @@ export default function ContentCard({ content }) {
                 {content.name}
               </span>
             </div>
-            <div className="text-gray-800">
-              <span>
-                <img
-                  src="profile_pic.png"
-                  className="h-8 inline-block rounded-full"
-                ></img>
-              </span>
-              <span className="ml-1 text-xs">Author</span>
-            </div>
+            {author ? (
+              <div className="text-gray-800">
+                <span>
+                  {author.photoUrl ? (
+                    <img
+                      src={author.photoUrl}
+                      className="h-8 inline-block rounded-full"
+                    ></img>
+                  ) : (
+                    <img
+                      src="profile_pic.png"
+                      className="h-8 inline-block rounded-full"
+                    ></img>
+                  )}
+                </span>
+                <span className="ml-1 text-xs">{author.name}</span>
+              </div>
+            ) : (
+              <div></div>
+            )}
           </div>
           <div className="flex justify-between">
             <div>Reviews</div>
