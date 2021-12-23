@@ -6,6 +6,19 @@ import {
   GoogleAuthProvider,
   signOut,
 } from "firebase/auth";
+
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  query,
+  getDocs,
+  collection,
+  where,
+  limit,
+  updateDoc,
+  addDoc,
+} from "firebase/firestore";
 import { useFirebaseAuth } from "../auth";
 import { useState, useRef } from "react";
 import firebaseApp from "../firebase";
@@ -19,6 +32,39 @@ export default function Navbar() {
   const [signingUp, setSigningUp] = useState(false);
   const emailInput = useRef(null);
   const pwInput = useRef(null);
+
+  const db = getFirestore(firebaseApp);
+
+  const checkUser = async (user) => {
+    const q = query(
+      collection(db, "users"),
+      where("email", "==", user.email),
+      limit(1)
+    );
+    const data = await getDocs(q);
+
+    return { userFromFirebaseAuth: user, userFromDatabase: data.docs[0] };
+  };
+
+  const updateUser = async (user_db, user_info) => {
+    const userDoc = doc(db, "users", user_db.id);
+    const data = await updateDoc(userDoc, {
+      name: user_info.displayName,
+      photoUrl: user_info.photoURL,
+    });
+
+    return data;
+  };
+
+  const addUser = async (user_info) => {
+    const data = await addDoc(collection(db, "users"), {
+      name: user_info.displayName,
+      photoUrl: user_info.photoURL,
+      email: user_info.email,
+    });
+
+    return data;
+  };
 
   function signOutOfFirebase() {
     signOut(auth)
@@ -76,6 +122,19 @@ export default function Navbar() {
         const token = credential.accessToken;
         // The signed-in user info.
         const user = result.user;
+        // Check if email is in DB
+        return checkUser(user);
+      })
+      .then(({ userFromFirebaseAuth, userFromDatabase }) => {
+        if (userFromDatabase) {
+          // If it is, update name and photo
+          return updateUser(userFromDatabase, userFromFirebaseAuth);
+        } else {
+          // If it isn't, add user to db
+          return addUser(userFromFirebaseAuth);
+        }
+      })
+      .then(() => {
         setModalShown(false);
       })
       .catch((error) => {
