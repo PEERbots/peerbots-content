@@ -4,7 +4,7 @@ import {
   collection,
   query,
   where,
-  limit,
+  doc,
   getDocs,
   documentId,
 } from "firebase/firestore";
@@ -13,16 +13,17 @@ import ContentCard from "./contentCard";
 
 export default function ContentRow({ content, children }) {
   const [authors, setAuthors] = useState([]);
+  const [ratings, setRatings] = useState([]);
   const db = getFirestore(firebaseApp);
   const fetchContentRowDetails = async () => {
     if (content && content.length > 0) {
-      const authorsReferences = content.map((doc) => {
+      const authorsIds = content.map((doc) => {
         return doc.data.owner.id;
       });
 
       const authorsQuery = query(
         collection(db, "users"),
-        where(documentId(), "in", authorsReferences)
+        where(documentId(), "in", authorsIds)
       );
 
       const authorsData = await getDocs(authorsQuery);
@@ -33,6 +34,42 @@ export default function ContentRow({ content, children }) {
         };
       });
       setAuthors(authorsFromDb);
+
+      const contentReferences = content.map((contentItem) => {
+        return doc(collection(db, "content"), contentItem.id);
+      });
+      const reviewsQuery = query(
+        collection(db, "reviews"),
+        where("content", "in", contentReferences)
+      );
+
+      const reviewsData = await getDocs(reviewsQuery);
+      const reviewsFromDb = reviewsData.docs.map((doc) => {
+        const docData = doc.data();
+        return {
+          content: docData.content.id,
+          rating: docData.rating,
+        };
+      });
+
+      const ratingsFromDb = contentReferences.map((contentId) => {
+        const reviewsForContent = reviewsFromDb.filter((review) => {
+          return review.content == contentId.id;
+        });
+        const nReviews = reviewsForContent.length;
+        return {
+          id: contentId.id,
+          averageRating:
+            nReviews > 0
+              ? reviewsForContent.reduce((sum, { rating }) => {
+                  return sum + rating;
+                }, 0)
+              : null,
+          nRatings: nReviews,
+        };
+      });
+
+      setRatings(ratingsFromDb);
     }
   };
   useEffect(() => {
@@ -57,6 +94,11 @@ export default function ContentRow({ content, children }) {
                     .map((author) => {
                       return author.data;
                     })[0]
+                }
+                rating={
+                  ratings.filter((rating) => {
+                    return rating.id == eachContent.id;
+                  })[0]
                 }
               />
             ))}
