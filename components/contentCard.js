@@ -106,15 +106,14 @@ export default function ContentCard({ content, author, rating, tags }) {
           </div>
           <div>
             {tags &&
-              tags.map((eachTag) => {
-                <>
-                  <span>A</span>
-                  <span className="bg-accent-two text-white">
-                    {eachTag.data.name}
-                  </span>
-                  ;
-                </>;
-              })}
+              tags.map((eachTag) => (
+                <span
+                  key={eachTag.id}
+                  className="bg-accent-two text-white rounded-3xl px-2 mx-1 text-xs"
+                >
+                  {eachTag.data.name}
+                </span>
+              ))}
           </div>
           <div className="flex items-center justify-between">
             <div className="text-gray-900 text-sm leading-none">
