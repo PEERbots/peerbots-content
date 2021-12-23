@@ -1,5 +1,4 @@
 export default function ContentCard({ content, author }) {
-  console.log(author);
   return (
     <>
       <div className="bg-white shadow-lg rounded p-4 w-72">

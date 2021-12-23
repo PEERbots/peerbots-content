@@ -7,13 +7,11 @@ import {
   where,
   limit,
   getDocs,
-  documentId,
 } from "firebase/firestore";
 import ContentRow from "./contentRow";
 
 export default function LatestContentRow() {
   const [latestContent, setLatestContent] = useState([]);
-  const [authors, setAuthors] = useState([]);
   const db = getFirestore(firebaseApp);
   const fetchLatestContent = async () => {
     const q = query(
@@ -29,23 +27,6 @@ export default function LatestContentRow() {
       };
     });
 
-    const authorsReferences = latestContentFromDb.map((doc) => {
-      return doc.data.owner.id;
-    });
-
-    const authorsQuery = query(
-      collection(db, "users"),
-      where(documentId(), "in", authorsReferences)
-    );
-
-    const authorsData = await getDocs(authorsQuery);
-    const authorsFromDb = authorsData.docs.map((doc) => {
-      return {
-        id: doc.id,
-        data: doc.data(),
-      };
-    });
-    setAuthors(authorsFromDb);
     setLatestContent(latestContentFromDb);
   };
 
@@ -54,7 +35,7 @@ export default function LatestContentRow() {
   }, []);
   return (
     <>
-      <ContentRow content={latestContent} authors={authors}>
+      <ContentRow content={latestContent}>
         <h3 className="text-xl font-bold">Latest Content</h3>
       </ContentRow>
     </>

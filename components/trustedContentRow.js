@@ -13,7 +13,6 @@ import ContentRow from "./contentRow";
 
 export default function TrustedContentRow() {
   const [trustedContent, setTrustedContent] = useState([]);
-  const [authors, setAuthors] = useState([]);
   const db = getFirestore(firebaseApp);
   const fetchTrustedContent = async () => {
     const q = query(
@@ -30,23 +29,6 @@ export default function TrustedContentRow() {
       };
     });
 
-    const authorsReferences = trustedContentFromDb.map((doc) => {
-      return doc.data.owner.id;
-    });
-
-    const authorsQuery = query(
-      collection(db, "users"),
-      where(documentId(), "in", authorsReferences)
-    );
-
-    const authorsData = await getDocs(authorsQuery);
-    const authorsFromDb = authorsData.docs.map((doc) => {
-      return {
-        id: doc.id,
-        data: doc.data(),
-      };
-    });
-    setAuthors(authorsFromDb);
     setTrustedContent(trustedContentFromDb);
   };
 
@@ -55,7 +37,7 @@ export default function TrustedContentRow() {
   }, []);
   return (
     <>
-      <ContentRow content={trustedContent} authors={authors}>
+      <ContentRow content={trustedContent}>
         <h3 className="text-xl font-bold">Trusted Content</h3>
         <p className="text-sm">Content trusted by the Peerbots team.</p>
       </ContentRow>
