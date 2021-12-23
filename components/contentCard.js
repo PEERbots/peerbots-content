@@ -34,7 +34,7 @@ export default function ContentCard({ content, author, rating, tags }) {
             <div>
               {rating ? (
                 <>
-                  {rating.nRatings > 0 ? (
+                  {rating.nReviews > 0 ? (
                     <span>
                       <span className="text-accent-hc font-bold px-2 text-base">
                         {rating.averageRating}
@@ -54,7 +54,7 @@ export default function ContentCard({ content, author, rating, tags }) {
                         </svg>
                       </span>
                       <span className="text-sm">
-                        ({rating.nRatings} reviews)
+                        ({rating.nReviews} reviews)
                       </span>
                     </span>
                   ) : (

@@ -86,14 +86,14 @@ export default function ContentRow({ content, children }) {
         });
         const nReviews = reviewsForContent.length;
         return {
-          id: contentId.id,
+          contentId: contentId.id,
           averageRating:
             nReviews > 0
               ? reviewsForContent.reduce((sum, { rating }) => {
                   return sum + rating;
                 }, 0)
               : null,
-          nRatings: nReviews,
+          nReviews: nReviews,
         };
       });
 
@@ -125,7 +125,7 @@ export default function ContentRow({ content, children }) {
                 }
                 rating={
                   ratings.filter((rating) => {
-                    return rating.id == eachContent.id;
+                    return rating.contentId == eachContent.id;
                   })[0]
                 }
                 tags={tags.filter((tag) => {
