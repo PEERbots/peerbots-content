@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function ContentCard({ content, author, rating, tags }) {
   return (
     <>
@@ -6,7 +8,9 @@ export default function ContentCard({ content, author, rating, tags }) {
           <div className=" flex justify-between">
             <div>
               <span className="text-gray-900 text-base text-ellipsis">
+                <Link href="content/[contentId]" as={`content/${content.id}`}>
                 {content.name}
+                </Link>
               </span>
             </div>
             {author ? (

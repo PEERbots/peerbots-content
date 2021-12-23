@@ -15,6 +15,9 @@ export default function ContentRow({ content, children }) {
   const [authors, setAuthors] = useState([]);
   const [ratings, setRatings] = useState([]);
   const [tags, setTags] = useState([]);
+  content.forEach((content) => {
+    content.data.id = content.id;
+  })
 
   const db = getFirestore(firebaseApp);
   const fetchContentRowDetails = async () => {
