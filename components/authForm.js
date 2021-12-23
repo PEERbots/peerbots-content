@@ -1,17 +1,5 @@
 import firebaseApp from "../firebase";
 import {
-  getFirestore,
-  doc,
-  getDoc,
-  query,
-  getDocs,
-  collection,
-  where,
-  limit,
-  updateDoc,
-  addDoc,
-} from "firebase/firestore";
-import {
   getAuth,
   signInWithPopup,
   createUserWithEmailAndPassword,
