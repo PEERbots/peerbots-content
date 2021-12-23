@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 export default function ContentCard({ content, author, rating, tags }) {
-  const contentId = content.id;
   return (
     <>
       <div className="bg-white shadow-lg rounded p-4 w-72">
@@ -9,7 +8,7 @@ export default function ContentCard({ content, author, rating, tags }) {
           <div className=" flex justify-between">
             <div>
               <span className="text-gray-900 text-base text-ellipsis">
-                <Link href="/content/[contentId]" as={`/content/${contentId}`}>
+                <Link href="/content/[contentId]" as={`/content/${content.id}`}>
                 {content.name}
                 </Link>
               </span>
