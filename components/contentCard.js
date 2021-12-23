@@ -109,7 +109,11 @@ export default function ContentCard({ content, author, rating, tags }) {
               tags.map((eachTag) => (
                 <span
                   key={eachTag.id}
-                  className="bg-accent-two text-white rounded-3xl px-2 mx-1 text-xs"
+                  style={{
+                    background: eachTag.data.color,
+                    color: eachTag.data.textColor,
+                  }}
+                  className="rounded-3xl px-2 mx-1 text-xs"
                 >
                   {eachTag.data.name}
                 </span>
