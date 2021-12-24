@@ -54,6 +54,13 @@ export default function MyContentPage() {
           >
             <h3>Your Public Content</h3>
           </ContentRow>
+          <ContentRow
+            content={content.filter((contentItem) => {
+              return !contentItem.data.public;
+            })}
+          >
+            <h3>Your Private Content</h3>
+          </ContentRow>
         </div>
       </CheckAuth>
     </div>
