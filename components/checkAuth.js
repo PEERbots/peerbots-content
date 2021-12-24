@@ -3,7 +3,6 @@ import AuthForm from "./authForm";
 
 export default function CheckAuth({ children }) {
   const { user } = useFirebaseAuth();
-  console.log(user);
   return (
     <>
       {user ? (
