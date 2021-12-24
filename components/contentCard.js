@@ -9,26 +9,30 @@ export default function ContentCard({ content, author, rating, tags }) {
             <div>
               <span className="text-gray-900 text-base text-ellipsis">
                 <Link href="/content/[contentId]" as={`/content/${content.id}`}>
-                {content.name}
+                  {content.name}
                 </Link>
               </span>
             </div>
             {author ? (
               <div className="text-gray-800">
-                <span>
-                  {author.photoUrl ? (
-                    <img
-                      src={author.photoUrl}
-                      className="h-8 inline-block rounded-full"
-                    ></img>
-                  ) : (
-                    <img
-                      src="profile_pic.png"
-                      className="h-8 inline-block rounded-full"
-                    ></img>
-                  )}
-                </span>
-                <span className="ml-1 text-xs">{author.name}</span>
+                <Link href="/[userName]" as={`/${author.id}`}>
+                  <span>
+                    {author.data.photoUrl ? (
+                      <img
+                        src={author.data.photoUrl}
+                        className="h-8 inline-block rounded-full"
+                      ></img>
+                    ) : (
+                      <img
+                        src="profile_pic.png"
+                        className="h-8 inline-block rounded-full"
+                      ></img>
+                    )}
+                  </span>
+                </Link>
+                <Link href="/[userName]" as={`/${author.id}`}>
+                  <span className="ml-1 text-xs">{author.data.name}</span>
+                </Link>
               </div>
             ) : (
               <div></div>
