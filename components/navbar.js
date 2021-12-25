@@ -69,8 +69,8 @@ export default function Navbar() {
                 {/* Search Bar */}
                 <div className="flex items-center justify-center">
                   <div className="flex border-2 rounded">
-                      <input type="text" className="px-4 py-2 w-80" placeholder="Search..."></input>
-                        <button className="flex items-center justify-center px-4 border-l">
+                      <input type="text" className="input-base" placeholder="Search..."></input>
+                        <button className="input-base border-l">
                             <svg className="w-6 h-6 text-gray-600" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24">
                               <path
