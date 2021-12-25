@@ -6,6 +6,8 @@ import { Dialog } from "@headlessui/react";
 import { getAuth, signOut } from "firebase/auth";
 import { useFirebaseAuth } from "../auth";
 import logo from "../public/peerbots_logo.png";
+import Image from "next/image";
+import Link from "next/link";
 
 export default function Navbar() {
   const user = useFirebaseAuth();
@@ -49,22 +51,44 @@ export default function Navbar() {
 
       {/* The Entire Navbar */}
       <nav>
-        <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-          <div className="relative flex items-center justify-between h-16">
-            <div className="absolute inset-y-0 left-0 flex items-center hidden">
+        <div className="max-w-full justify-between mx-auto px-2 sm:px-6 lg:px-8">
+          <div className="relative lg:flex items-center justify-between h-16">
               {/* The Left Side */}
-              <div>
-                <img src="peerbots_logo.png" alt="Peerbots Logo" />
+            <div className="left-0">
+              <div className="w-48">
+                <Link href="/">
+                  <a>
+                    <Image className="" src={logo} alt="Peerbots Logo" />
+                  </a>
+                </Link>
               </div>
-              <div>Search goes here</div>
             </div>
-            <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+              {/* The Middle */}
+            <div className="inset-0">
+              <div className="">
+                {/* Search Bar */}
+                <div class="flex items-center justify-center">
+                  <div class="flex border-2 rounded">
+                      <input type="text" class="px-4 py-2 w-80" placeholder="Search..."></input>
+                        <button class="flex items-center justify-center px-4 border-l">
+                            <svg class="w-6 h-6 text-gray-600" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24">
+                              <path
+                                  d="M16.32 14.9l5.39 5.4a1 1 0 0 1-1.42 1.4l-5.38-5.38a8 8 0 1 1 1.41-1.41zM10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+              </div>
+            </div>
               {/* The Right Side */}
-
+            <div className="absolute right-0 flex sm:static sm:inset-auto sm:ml-6 sm:pr-0">
               {user.user ? (
                 <>
-                  <div>
-                    Signed in as: {} {user.user.displayName}
+                  <div className="flex items-center">
+                    <div className="px-2">
+                    {} {user.user.displayName}
+                    </div>
                     <button
                       onClick={signOutOfFirebase}
                       className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -75,7 +99,7 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  <div className="justify-center">
+                  <div className="">
                     <span>
                       <a
                         onClick={() => {
