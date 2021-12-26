@@ -1,5 +1,5 @@
 import AuthForm from "./authForm";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import firebaseApp from "../firebase";
 
 import { Dialog } from "@headlessui/react";
@@ -14,7 +14,20 @@ export default function Navbar() {
   const auth = getAuth(firebaseApp);
   const [modalShown, setModalShown] = useState(false);
   const [signingUp, setSigningUp] = useState(false);
+  const [rawSearchQuery, setRawSearchQuery] = useState("");
+  const searchQueryRef = useRef();
 
+  // useEffect(() => {
+  //   if (!searchQueryRef) return null;
+  //   setRawSearchQuery(searchQueryRef.current.value)
+  // }, [searchQueryRef])
+  
+  const submitSearchQuery = () => {
+    console.log("Query Ref: ", searchQueryRef.current.value);
+    setRawSearchQuery(searchQueryRef.current.value);
+    console.log("Query submitted: ", rawSearchQuery);
+  }
+  
   function signOutOfFirebase() {
     signOut(auth)
       .then(() => {
@@ -69,14 +82,19 @@ export default function Navbar() {
                 {/* Search Bar */}
                 <div className="flex items-center justify-center">
                   <div className="flex border-2 rounded">
-                      <input type="text" className="input-base" placeholder="Search..."></input>
-                        <button className="input-base border-l">
+                      <form onSubmit={() => {
+                        console.log(searchQueryRef.current.value);
+                        submitSearchQuery();
+                      }}>
+                        <input type="text" ref={searchQueryRef} name="search" className="input-base" placeholder="Search..."></input>
+                        <button className="input-base border-l" >
                             <svg className="w-6 h-6 text-gray-600" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24">
                               <path
                                   d="M16.32 14.9l5.39 5.4a1 1 0 0 1-1.42 1.4l-5.38-5.38a8 8 0 1 1 1.41-1.41zM10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z" />
                             </svg>
                         </button>
+                      </form>
                     </div>
                 </div>
               </div>
