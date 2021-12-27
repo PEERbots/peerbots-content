@@ -5,6 +5,7 @@ import firebaseApp from "../firebase";
 import { Dialog } from "@headlessui/react";
 import { getAuth, signOut } from "firebase/auth";
 import { useFirebaseAuth } from "../auth";
+import { useRouter } from "next/router";
 import logo from "../public/peerbots_logo.png";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,19 +15,13 @@ export default function Navbar() {
   const auth = getAuth(firebaseApp);
   const [modalShown, setModalShown] = useState(false);
   const [signingUp, setSigningUp] = useState(false);
-  const [rawSearchQuery, setRawSearchQuery] = useState("");
   const searchQueryRef = useRef();
-
-  // useEffect(() => {
-  //   if (!searchQueryRef) return null;
-  //   setRawSearchQuery(searchQueryRef.current.value)
-  // }, [searchQueryRef])
+  const router = useRouter();
   
   const submitSearchQuery = () => {
     console.log("Query Ref: ", searchQueryRef.current.value);
-    setRawSearchQuery(searchQueryRef.current.value);
-    console.log("Query submitted: ", rawSearchQuery);
   }
+
   
   function signOutOfFirebase() {
     signOut(auth)
@@ -82,12 +77,9 @@ export default function Navbar() {
                 {/* Search Bar */}
                 <div className="flex items-center justify-center">
                   <div className="flex border-2 rounded">
-                      <form onSubmit={() => {
-                        console.log(searchQueryRef.current.value);
-                        submitSearchQuery();
-                      }}>
+                      <form onSubmit={() => submitSearchQuery()}>
                         <input type="text" ref={searchQueryRef} name="search" className="input-base" placeholder="Search..."></input>
-                        <button className="input-base border-l" >
+                        <button className="input-base border-l" type="submit">
                             <svg className="w-6 h-6 text-gray-600" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24">
                               <path
