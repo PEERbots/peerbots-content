@@ -9,6 +9,7 @@ import { useRouter } from "next/router";
 import logo from "../public/peerbots_logo.png";
 import Image from "next/image";
 import Link from "next/link";
+import amplitude from "amplitude-js";
 
 export default function Navbar() {
   const user = useFirebaseAuth();
@@ -30,7 +31,7 @@ export default function Navbar() {
     signOut(auth)
       .then(() => {
         // Sign-out successful.
-        console.log("User signed out");
+        amplitude.getInstance().logEvent("Signed Out");
       })
       .catch((error) => {
         // An error happened.

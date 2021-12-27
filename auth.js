@@ -9,6 +9,7 @@ import {
   limit,
   getDocs,
 } from "firebase/firestore";
+import amplitude from "amplitude-js";
 
 const FirebaseAuthContext = createContext();
 
@@ -26,6 +27,7 @@ export const FirebaseAuthProvider = ({ children }) => {
       );
       const data = await getDocs(userQuery);
       const userDataFromDb = { id: data.docs[0].id, data: data.docs[0].data() };
+      amplitude.getInstance().setUserId(data.docs[0].id);
       setUserInDb(userDataFromDb);
     }
   };

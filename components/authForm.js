@@ -6,9 +6,20 @@ import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
 } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import {
+  getFirestore,
+  query,
+  collection,
+  doc,
+  updateDoc,
+  addDoc,
+  where,
+  limit,
+  getDocs,
+} from "firebase/firestore";
 import { useState, useRef } from "react";
 import { useFirebaseAuth } from "../auth";
+import amplitude from "amplitude-js";
 
 export default function AuthForm() {
   const user = useFirebaseAuth();
@@ -59,6 +70,9 @@ export default function AuthForm() {
         .then((user) => {
           console.log("New user created");
           console.log(user);
+          amplitude.getInstance().logEvent("Signed Up", {
+            "Authentication Provider": "Email & Password",
+          });
         })
         .catch((error) => {
           console.log("An error happenend with signing up");
@@ -73,6 +87,9 @@ export default function AuthForm() {
         .then((user) => {
           console.log("User signed in");
           console.log(user);
+          amplitude.getInstance().logEvent("Signed In", {
+            "Authentication Provider": "Email & Password",
+          });
         })
         .catch((error) => {
           console.log("An error happenend with signing in");
@@ -96,9 +113,15 @@ export default function AuthForm() {
       .then(({ userFromFirebaseAuth, userFromDatabase }) => {
         if (userFromDatabase) {
           // If it is, update name and photo
+          amplitude
+            .getInstance()
+            .logEvent("Signed In", { "Authentication Provider": "Google" });
           return updateUser(userFromDatabase, userFromFirebaseAuth);
         } else {
           // If it isn't, add user to db
+          amplitude
+            .getInstance()
+            .logEvent("Signed Up", { "Authentication Provider": "Google" });
           return addUser(userFromFirebaseAuth);
         }
       })
