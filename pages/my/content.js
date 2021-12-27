@@ -24,8 +24,7 @@ export default function MyContentPage() {
       // Get their content
       const contentQuery = query(
         collection(db, "content"),
-        where("owner", "==", userReference),
-        where("public", "==", true)
+        where("owner", "==", userReference)
       );
       const contentData = await getDocs(contentQuery);
       const contentFromDb = contentData.docs.map((doc) => {
