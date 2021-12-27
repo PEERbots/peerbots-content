@@ -12,6 +12,7 @@ import {
   documentId,
   getDocs,
 } from "firebase/firestore";
+import amplitude from "amplitude-js";
 
 export default function SearchResults() {
   const router = useRouter();
@@ -46,6 +47,9 @@ export default function SearchResults() {
 
   useEffect(() => {
     fetchSearchResults();
+    amplitude.getInstance().logEvent("Viewed Page: Search Results", {
+      "Search Query": q,
+    });
   }, [q]);
 
   return (

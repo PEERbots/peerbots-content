@@ -11,6 +11,7 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { useState, useEffect } from "react";
+import amplitude from "amplitude-js";
 
 export default function ContentPage() {
   const [contentInfo, setContentInfo] = useState({});
@@ -65,20 +66,19 @@ export default function ContentPage() {
         });
 
         const reviewersIds = reviewsFromDb.map((review) => review.data.user.id);
-        if(reviewersIds.length > 0) {
+        if (reviewersIds.length > 0) {
           const reviewersQuery = query(
             collection(db, "users"),
             where(documentId(), "in", reviewersIds)
-            );
-            const reviewersData = await getDocs(reviewersQuery);
-            const reviewersFromDb = reviewersData.docs.map((doc) => {
-              return { id: doc.id, data: doc.data() };
-            });
-            console.log(reviewers);
-            setReviewers(reviewersFromDb);
-            setReviews(reviewsFromDb);
-          }
-        else {
+          );
+          const reviewersData = await getDocs(reviewersQuery);
+          const reviewersFromDb = reviewersData.docs.map((doc) => {
+            return { id: doc.id, data: doc.data() };
+          });
+          console.log(reviewers);
+          setReviewers(reviewersFromDb);
+          setReviews(reviewsFromDb);
+        } else {
           setReviewers([]);
           setReviews([]);
         }
@@ -90,6 +90,13 @@ export default function ContentPage() {
   useEffect(() => {
     fetchContentDetails();
   }, [contentId]);
+
+  useEffect(() => {
+    amplitude.getInstance().logEvent("Viewed Page: Content Details", {
+      "Content ID": contentId,
+    });
+  }, []);
+
   return (
     <div>
       <div>{contentInfo.name}</div>
