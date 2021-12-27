@@ -48,7 +48,7 @@ export default function ContentRow({ content, children }) {
         })
         .flat();
 
-      // console.log("All tags", tagsIds);
+      console.log("All tags", tagsIds);
 
       if (tagsIds.length > 0) {
         const tagsQuery = query(
