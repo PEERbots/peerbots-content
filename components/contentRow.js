@@ -17,7 +17,7 @@ export default function ContentRow({ content, children }) {
   const [tags, setTags] = useState([]);
   content.forEach((content) => {
     content.data.id = content.id;
-  })
+  });
 
   const db = getFirestore(firebaseApp);
   const fetchContentRowDetails = async () => {
@@ -118,13 +118,9 @@ export default function ContentRow({ content, children }) {
                 key={eachContent.id}
                 content={eachContent.data}
                 author={
-                  authors
-                    .filter((author) => {
-                      return author.id == eachContent.data.owner.id;
-                    })
-                    .map((author) => {
-                      return author.data;
-                    })[0]
+                  authors.filter((author) => {
+                    return author.id == eachContent.data.owner.id;
+                  })[0]
                 }
                 rating={
                   ratings.filter((rating) => {
