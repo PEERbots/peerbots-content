@@ -11,6 +11,7 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
+import amplitude from "amplitude-js"
 
 export default function MyContentPage() {
   const { userInDb } = useFirebaseAuth();
@@ -40,6 +41,10 @@ export default function MyContentPage() {
   useEffect(() => {
     fetchUserContent();
   }, [userInDb]);
+
+  useEffect(() => {
+    amplitude.getInstance().logEvent("Viewed Page: My Content");
+  }, []);
 
   return (
     <div>

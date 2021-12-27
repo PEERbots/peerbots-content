@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { useState, useEffect } from "react";
 import ContentRow from "../components/contentRow";
+import amplitude from "amplitude-js";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -68,6 +69,9 @@ export default function ProfilePage() {
   };
   useEffect(() => {
     fetchUserDetails();
+    amplitude.getInstance().logEvent("Viewed Page: Profile Details", {
+      "Profile ID": username,
+    });
   }, [username]);
 
   useEffect(() => {
