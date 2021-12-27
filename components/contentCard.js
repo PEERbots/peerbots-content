@@ -1,4 +1,5 @@
 import Link from "next/link";
+import amplitude from "amplitude-js";
 
 export default function ContentCard({ content, author, rating, tags }) {
   return (
@@ -7,16 +8,40 @@ export default function ContentCard({ content, author, rating, tags }) {
         <div className="space-y-1 w-full">
           <div className=" flex justify-between">
             <div>
-              <span className="text-gray-900 text-base text-ellipsis">
-                <Link href="/content/[contentId]" as={`/content/${content.id}`}>
+              <Link href="/content/[contentId]" as={`/content/${content.id}`}>
+                <span
+                  className="text-gray-900 text-base text-ellipsis"
+                  onClick={() => {
+                    amplitude
+                      .getInstance()
+                      .logEvent("Clicked Link: Content Card - Name", {
+                        "Content ID": content.id,
+                        "Content Name": content.name,
+                        "Content Author": author.data.name,
+                        "Author ID": author.id,
+                      });
+                  }}
+                >
                   {content.name}
-                </Link>
-              </span>
+                </span>
+              </Link>
             </div>
             {author ? (
               <div className="text-gray-800">
                 <Link href="/[userName]" as={`/${author.id}`}>
-                  <span>
+                  <span
+                    onClick={() => {
+                      amplitude
+                        .getInstance()
+                        .logEvent("Clicked Link: Content Card - Author", {
+                          "Content ID": content.id,
+                          "Content Name": content.name,
+                          "Content Author": author.data.name,
+                          "Author ID": author.id,
+                          "Click Source": "Profile Photo",
+                        });
+                    }}
+                  >
                     {author.data.photoUrl ? (
                       <img
                         src={author.data.photoUrl}
@@ -31,7 +56,22 @@ export default function ContentCard({ content, author, rating, tags }) {
                   </span>
                 </Link>
                 <Link href="/[userName]" as={`/${author.id}`}>
-                  <span className="ml-1 text-xs">{author.data.name}</span>
+                  <span
+                    className="ml-1 text-xs"
+                    onClick={() => {
+                      amplitude
+                        .getInstance()
+                        .logEvent("Clicked Link: Content Card - Author", {
+                          "Content ID": content.id,
+                          "Content Name": content.name,
+                          "Content Author": author.data.name,
+                          "Author ID": author.id,
+                          "Click Source": "Author Name",
+                        });
+                    }}
+                  >
+                    {author.data.name}
+                  </span>
                 </Link>
               </div>
             ) : (
