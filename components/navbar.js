@@ -17,12 +17,15 @@ export default function Navbar() {
   const [signingUp, setSigningUp] = useState(false);
   const searchQueryRef = useRef();
   const router = useRouter();
-  
-  const submitSearchQuery = () => {
-    console.log("Query Ref: ", searchQueryRef.current.value);
-  }
 
-  
+  const submitSearchQuery = (e) => {
+    e.preventDefault();
+    router.push({
+      pathname: "/search",
+      query: { q: searchQueryRef.current.value },
+    });
+  };
+
   function signOutOfFirebase() {
     signOut(auth)
       .then(() => {
@@ -61,7 +64,7 @@ export default function Navbar() {
       <nav>
         <div className="max-w-full justify-between mx-auto px-2 sm:px-6 lg:px-8">
           <div className="relative lg:flex items-center justify-between h-16">
-              {/* The Left Side */}
+            {/* The Left Side */}
             <div className="left-0">
               <div className="w-48">
                 <Link href="/">
@@ -71,33 +74,42 @@ export default function Navbar() {
                 </Link>
               </div>
             </div>
-              {/* The Middle */}
+            {/* The Middle */}
             <div className="inset-0">
               <div className="">
                 {/* Search Bar */}
                 <div className="flex items-center justify-center">
                   <div className="flex border-2 rounded">
-                      <form onSubmit={() => submitSearchQuery()}>
-                        <input type="text" ref={searchQueryRef} name="search" className="input-base" placeholder="Search..."></input>
-                        <button className="input-base border-l" type="submit">
-                            <svg className="w-6 h-6 text-gray-600" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24">
-                              <path
-                                  d="M16.32 14.9l5.39 5.4a1 1 0 0 1-1.42 1.4l-5.38-5.38a8 8 0 1 1 1.41-1.41zM10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z" />
-                            </svg>
-                        </button>
-                      </form>
-                    </div>
+                    <form onSubmit={submitSearchQuery}>
+                      <input
+                        type="text"
+                        ref={searchQueryRef}
+                        name="search"
+                        className="input-base"
+                        placeholder="Search..."
+                      ></input>
+                      <button className="input-base border-l" type="submit">
+                        <svg
+                          className="w-6 h-6 text-gray-600"
+                          fill="currentColor"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M16.32 14.9l5.39 5.4a1 1 0 0 1-1.42 1.4l-5.38-5.38a8 8 0 1 1 1.41-1.41zM10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z" />
+                        </svg>
+                      </button>
+                    </form>
+                  </div>
                 </div>
               </div>
             </div>
-              {/* The Right Side */}
+            {/* The Right Side */}
             <div className="absolute right-0 flex sm:static sm:inset-auto sm:ml-6 sm:pr-0">
               {user.user ? (
                 <>
                   <div className="flex items-center">
                     <div className="px-2">
-                    {} {user.user.displayName}
+                      {} {user.user.displayName}
                     </div>
                     <button
                       onClick={signOutOfFirebase}
