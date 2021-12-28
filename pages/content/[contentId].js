@@ -13,7 +13,7 @@ import {
   Timestamp,
   limit,
 } from "firebase/firestore";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import amplitude from "amplitude-js";
 
 import { useFirebaseAuth } from "../../auth";
@@ -29,10 +29,29 @@ export default function ContentPage() {
   const [contentAuthored, setContentAuthored] = useState(false);
   const [contentPurchased, setContentPurchased] = useState(false);
 
+  const copyAsInput = useRef();
+
   const db = getFirestore(firebaseApp);
 
   const router = useRouter();
   const { contentId } = router.query;
+
+  const copyContent = async (e) => {
+    e.preventDefault();
+    const contentName = copyAsInput.current.value;
+    let newContent = contentInfo;
+    newContent.name = contentName;
+    newContent.originalName = contentInfo.name;
+    newContent.copyOf = doc(db, "content", contentId);
+    newContent.copyDate = Timestamp.now();
+    newContent.public = false;
+    newContent.trusted = false;
+    newContent.owner = doc(db, "users", userInDb.id);
+
+    const data = await addDoc(collection(db, "content"), newContent);
+
+    router.push(`/content/${data.id}`);
+  };
 
   const checkContentOwned = async (content) => {
     if (userInDb && Object.keys(userInDb).length != 0) {
@@ -211,7 +230,24 @@ export default function ContentPage() {
                 ) : (
                   <span>You purchased this content</span>
                 )}
-                <span>Copy to App!</span>
+                <form onSubmit={copyContent}>
+                  <label>Copy As</label>
+                  <input
+                    type="text"
+                    ref={copyAsInput}
+                    className="input-base form-input"
+                    name="copyAs"
+                    placeholder={contentInfo.name}
+                  ></input>
+                  <button
+                    className="btn-primary"
+                    type="submit"
+                    onClick={copyContent}
+                  >
+                    {" "}
+                    Copy to App!
+                  </button>
+                </form>
               </>
             ) : (
               <button
