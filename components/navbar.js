@@ -1,7 +1,7 @@
 import AuthForm from "./authForm";
 import { useState, useEffect, useRef } from "react";
 import firebaseApp from "../firebase";
-import Search from "./searchComponent";
+import SearchForm from "./searchForm";
 
 import { Dialog } from "@headlessui/react";
 import { getAuth, signOut } from "firebase/auth";
@@ -72,7 +72,7 @@ export default function Navbar() {
             <div className="inset-0">
               <div className="">
                 {/* Search Bar */}
-                <Search />
+                <SearchForm />
               </div>
             </div>
             {/* The Right Side */}

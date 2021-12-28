@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { useRef } from "react";
 
-export default function search() {
+export default function SearchForm() {
     const router = useRouter();
     const searchQueryRef = useRef();
     const submitSearchQuery = (e) => {
