@@ -11,7 +11,7 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
-import amplitude from "amplitude-js"
+import amplitude from "amplitude-js";
 
 export default function MyContentPage() {
   const { userInDb } = useFirebaseAuth();
@@ -19,7 +19,6 @@ export default function MyContentPage() {
   const db = getFirestore(firebaseApp);
 
   const fetchUserContent = async () => {
-    console.log(userInDb);
     if (userInDb && userInDb.id) {
       const userReference = doc(db, "users", userInDb.id);
       // Get their content
@@ -53,17 +52,17 @@ export default function MyContentPage() {
         <div>
           <ContentRow
             content={content.filter((contentItem) => {
-              return contentItem.data.public;
+              return contentItem.data.copyOf;
             })}
           >
-            <h3>Your Public Content</h3>
+            <h3>Your Copied Content</h3>
           </ContentRow>
           <ContentRow
             content={content.filter((contentItem) => {
-              return !contentItem.data.public;
+              return !contentItem.data.copyOf;
             })}
           >
-            <h3>Your Private Content</h3>
+            <h3>Your Authored Content</h3>
           </ContentRow>
         </div>
       </CheckAuth>
