@@ -188,10 +188,22 @@ export default function ContentPage() {
         )}
       </div>
       <div>
+        <div>
+          {contentInfo.price == 0 ? (
+            <span className="uppercase">Free</span>
+          ) : (
+            <span>
+              {new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+              }).format(contentInfo.price)}
+            </span>
+          )}
+        </div>
         {user ? (
           <>
             {contentOwned ? (
-              <span>You own this content</span>
+              <span>You authored this content</span>
             ) : (
               <button
                 className="btn-primary"
