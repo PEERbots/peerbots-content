@@ -131,17 +131,19 @@ export default function NewNavbar() {
                 {/* Profile dropdown */}
                 <Menu as="div" className="ml-3 relative">
                   <div>
-                    <Menu.Button className="bg-gray-800 flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                    <Menu.Button className="bg-gray-800 flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
                       <span className="sr-only">Open user menu</span>
                         <>
-                            <div className='h-8 w-8 rounded-full'>
+                            <div className='h-8 w-8'>
                             {user.user.photoURL ? (
                                 <img
+                                className="rounded-full"
                                 src={user.user.photoURL}
                                 alt=""
                                 />
                                 ): (
                                     <img
+                                    className='rounded-full'
                                     src="profile_pic.png"
                                     alt=""
                                     />
@@ -162,32 +164,25 @@ export default function NewNavbar() {
                     <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
                         <Menu.Item>
                         {({ active }) => (
+                            <Link href="/">
                             <a
-                            href="/#"
-                            className={classNames(active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700')}
+                            className={classNames(active ? '' : '', 'block px-4 py-2 text-sm text-gray-700')}
                             >
                             My Profile
                             </a>
+                                </Link>
                         )}
                         </Menu.Item>
                         <Menu.Item>
                         {({ active }) => (
-                            <a
-                            href="#"
-                            className={classNames(active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700')}
-                            >
-                            Settings
-                            </a>
-                        )}
-                        </Menu.Item>
-                        <Menu.Item>
-                        {({ active }) => (
+                            <Link href=''>
                             <a
                             onClick={signOutOfFirebase}
                             className={classNames(active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700')}
                             >
                             Sign out
                             </a>
+                                </Link>
                         )}
                         </Menu.Item>
                     </Menu.Items>

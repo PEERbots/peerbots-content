@@ -56,7 +56,7 @@ export default function Navbar() {
 
       {/* The Entire Navbar */}
       {/* <nav> */}
-      <nav class="items-center justify-between flex-wrap p-6">
+      <nav className="items-center justify-between flex-wrap p-6">
         <div className="lg:max-w-full mx-auto px-2 sm:px-6 lg:px-8">
           <div className="lg:flex relative justify-between h-16">
             {/* The Left Side */}
