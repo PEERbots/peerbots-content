@@ -26,44 +26,44 @@ export default function ContentPage() {
   const [reviews, setReviews] = useState([]);
   const [reviewers, setReviewers] = useState([]);
   const [tags, setTags] = useState([]);
-  const [contentOwned, setContentOwned] = useState(false);
+  const [contentAuthored, setContentAuthored] = useState(false);
+  const [contentPurchased, setContentPurchased] = useState(false);
 
   const db = getFirestore(firebaseApp);
 
   const router = useRouter();
   const { contentId } = router.query;
 
-  const checkContentOwned = async ({ owner }, contentRef) => {
-    if (Object.keys(userInDb).length != 0) {
-      if (userInDb.id == owner.id) {
-        setContentOwned(true);
+  const checkContentOwned = async (content) => {
+    if (userInDb && Object.keys(userInDb).length != 0) {
+      if (userInDb.id == content.owner.id) {
+        setContentAuthored(true);
         return;
       }
 
-      const userRef = doc(db, "users", userInDb.id);
       const q = query(
         collection(db, "sales"),
-        where("content", "==", contentRef),
-        where("buyer", "==", userRef),
+        where("content", "==", doc(db, "content", contentId)),
+        where("buyer", "==", doc(db, "users", userInDb.id)),
         limit(1)
       );
 
       const data = await getDocs(q);
 
-      setContentOwned(data.docs.length > 0);
+      setContentPurchased(data.docs.length > 0);
 
       return data.docs.length > 0;
     }
   };
 
   const acquireContent = async () => {
-    if (!contentOwned) {
+    if (!(contentAuthored || contentPurchased)) {
       const data = await addDoc(collection(db, "sales"), {
         buyer: doc(db, "users", userInDb.id),
         content: doc(db, "content", contentId),
         datetime: Timestamp.now(),
       });
-      setContentOwned(true);
+      setContentPurchased(true);
     }
   };
 
@@ -141,7 +141,7 @@ export default function ContentPage() {
   }, [contentId]);
 
   useEffect(() => {
-    if (Object.keys(contentInfo).length != 0) {
+    if (contentInfo && Object.keys(contentInfo).length != 0) {
       fetchAuthor(contentInfo);
       fetchTags(contentInfo);
       fetchReviews();
@@ -150,10 +150,12 @@ export default function ContentPage() {
 
   useEffect(() => {
     if (
+      contentInfo &&
+      userInDb &&
       Object.keys(contentInfo).length != 0 &&
       Object.keys(userInDb).length != 0
     )
-      checkContentOwned(contentInfo, userInDb);
+      checkContentOwned(contentInfo);
   }, [contentInfo, userInDb]);
 
   useEffect(() => {
@@ -202,8 +204,15 @@ export default function ContentPage() {
         </div>
         {user ? (
           <>
-            {contentOwned ? (
-              <span>You authored this content</span>
+            {contentAuthored || contentPurchased ? (
+              <>
+                {contentAuthored ? (
+                  <span>You authored this content</span>
+                ) : (
+                  <span>You purchased this content</span>
+                )}
+                <span>Copy to App!</span>
+              </>
             ) : (
               <button
                 className="btn-primary"
