@@ -15,6 +15,8 @@ import {
 } from "firebase/firestore";
 import { useState, useEffect, useRef } from "react";
 import amplitude from "amplitude-js";
+import Link from "next/link";
+import ContentRow from "../../components/contentRow";
 
 import { useFirebaseAuth } from "../../auth";
 
@@ -28,6 +30,7 @@ export default function ContentPage() {
   const [tags, setTags] = useState([]);
   const [contentAuthored, setContentAuthored] = useState(false);
   const [contentPurchased, setContentPurchased] = useState(false);
+  const [copies, setCopies] = useState([]);
 
   const copyAsInput = useRef();
 
@@ -84,6 +87,22 @@ export default function ContentPage() {
       });
       setContentPurchased(true);
     }
+  };
+
+  const fetchCopies = async () => {
+    const copiesQuery = query(
+      collection(db, "content"),
+      where("copyOf", "==", doc(db, "content", contentId)),
+      where("owner", "==", doc(db, "users", userInDb.id))
+    );
+    const data = await getDocs(copiesQuery);
+    const copiesInDb = data.docs.map((doc) => {
+      return {
+        id: doc.id,
+        data: doc.data(),
+      };
+    });
+    setCopies(copiesInDb);
   };
 
   const fetchAuthor = async (contentInfoFromDb) => {
@@ -173,8 +192,12 @@ export default function ContentPage() {
       userInDb &&
       Object.keys(contentInfo).length != 0 &&
       Object.keys(userInDb).length != 0
-    )
-      checkContentOwned(contentInfo);
+    ) {
+      const contentOwned = checkContentOwned(contentInfo);
+      if (contentOwned) {
+        fetchCopies();
+      }
+    }
   }, [contentInfo, userInDb]);
 
   useEffect(() => {
@@ -210,15 +233,29 @@ export default function ContentPage() {
       </div>
       <div>
         <div>
-          {contentInfo.price == 0 ? (
-            <span className="uppercase">Free</span>
-          ) : (
+          {contentInfo.copyOf ? (
             <span>
-              {new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: "USD",
-              }).format(contentInfo.price)}
+              This is a copy of{" "}
+              <Link
+                href="/content/[contentId]"
+                as={`/content/${contentInfo.copyOf.id}`}
+              >
+                this content
+              </Link>
             </span>
+          ) : (
+            <div>
+              {contentInfo.price == 0 ? (
+                <span className="uppercase">Free</span>
+              ) : (
+                <span>
+                  {new Intl.NumberFormat("en-US", {
+                    style: "currency",
+                    currency: "USD",
+                  }).format(contentInfo.price)}
+                </span>
+              )}
+            </div>
           )}
         </div>
         {user ? (
@@ -280,7 +317,7 @@ export default function ContentPage() {
         )}
       </div>
       <div>
-        {reviews ? (
+        {!contentInfo.copyOf && reviews ? (
           <>
             {reviews.length > 0 ? (
               <span>
@@ -310,7 +347,7 @@ export default function ContentPage() {
             )}
           </>
         ) : (
-          <span>No rating</span>
+          <span>{""}</span>
         )}
       </div>
       <div>
@@ -330,32 +367,49 @@ export default function ContentPage() {
       </div>
       <div>{contentInfo.description}</div>
       <div>
-        <h3>Reviews</h3>
-        {reviews &&
-          reviews.map((review) => (
-            <div key={review.id}>
-              <div>{review.data.rating}</div>
-              <div>
-                <div>
-                  <img
-                    src={
-                      reviewers.filter((reviewer) => {
-                        return reviewer.id == review.data.user.id;
-                      })[0].data.photoUrl
-                    }
-                  ></img>
+        {!contentInfo.copyOf ? (
+          <div>
+            <h3>Reviews</h3>
+            {reviews.length > 0 &&
+              reviews.map((review) => (
+                <div key={review.id}>
+                  <div>{review.data.rating}</div>
+                  <div>
+                    <div>
+                      <img
+                        src={
+                          reviewers.filter((reviewer) => {
+                            return reviewer.id == review.data.user.id;
+                          })[0].data.photoUrl
+                        }
+                      ></img>
+                    </div>
+                    <div>
+                      {
+                        reviewers.filter((reviewer) => {
+                          return reviewer.id == review.data.user.id;
+                        })[0].data.name
+                      }
+                    </div>
+                  </div>
+                  <div>{review.data.description}</div>
                 </div>
-                <div>
-                  {
-                    reviewers.filter((reviewer) => {
-                      return reviewer.id == review.data.user.id;
-                    })[0].data.name
-                  }
-                </div>
-              </div>
-              <div>{review.data.description}</div>
-            </div>
-          ))}
+              ))}
+          </div>
+        ) : (
+          <div>{""}</div>
+        )}
+      </div>
+      <div>
+        {copies.length > 0 ? (
+          <div>
+            <ContentRow content={copies}>
+              <h3>Your copies</h3>
+            </ContentRow>
+          </div>
+        ) : (
+          <div>{""}</div>
+        )}
       </div>
     </div>
   );
