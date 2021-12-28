@@ -9,20 +9,120 @@ import {
   getDocs,
   documentId,
   getDoc,
+  addDoc,
+  Timestamp,
+  limit,
 } from "firebase/firestore";
 import { useState, useEffect } from "react";
 import amplitude from "amplitude-js";
 
+import { useFirebaseAuth } from "../../auth";
+
 export default function ContentPage() {
+  const { user, userInDb } = useFirebaseAuth();
+
   const [contentInfo, setContentInfo] = useState({});
   const [author, setAuthor] = useState({});
   const [reviews, setReviews] = useState([]);
   const [reviewers, setReviewers] = useState([]);
   const [tags, setTags] = useState([]);
+  const [contentOwned, setContentOwned] = useState(false);
+
   const db = getFirestore(firebaseApp);
 
   const router = useRouter();
   const { contentId } = router.query;
+
+  const checkContentOwned = async ({ owner }, contentRef) => {
+    if (Object.keys(userInDb).length != 0) {
+      if (userInDb.id == owner.id) {
+        setContentOwned(true);
+        return;
+      }
+
+      const userRef = doc(db, "users", userInDb.id);
+      const q = query(
+        collection(db, "sales"),
+        where("content", "==", contentRef),
+        where("buyer", "==", userRef),
+        limit(1)
+      );
+
+      const data = await getDocs(q);
+
+      setContentOwned(data.docs.length > 0);
+
+      return data.docs.length > 0;
+    }
+  };
+
+  const acquireContent = async () => {
+    if (!contentOwned) {
+      const data = await addDoc(collection(db, "sales"), {
+        buyer: doc(db, "users", userInDb.id),
+        content: doc(db, "content", contentId),
+        datetime: Timestamp.now(),
+      });
+      setContentOwned(true);
+    }
+  };
+
+  const fetchAuthor = async (contentInfoFromDb) => {
+    const authorRef = doc(db, "users", contentInfoFromDb.owner.id);
+    const author = await getDoc(authorRef);
+    const authorInfo = author.data();
+    setAuthor(authorInfo);
+  };
+
+  const fetchTags = async (contentInfoFromDb) => {
+    const tagsIds = contentInfoFromDb.tags.map((tag) => {
+      return tag.id;
+    });
+    const tagsQuery = query(
+      collection(db, "tags"),
+      where(documentId(), "in", tagsIds)
+    );
+    const tagsData = await getDocs(tagsQuery);
+    const tagsFromDb = tagsData.docs.map((doc) => {
+      return {
+        id: doc.id,
+        data: doc.data(),
+      };
+    });
+    setTags(tagsFromDb);
+  };
+
+  const fetchReviews = async () => {
+    const contentRef = doc(db, "content", contentId);
+    const reviewsQuery = query(
+      collection(db, "reviews"),
+      where("content", "==", contentRef)
+    );
+    const reviewsData = await getDocs(reviewsQuery);
+    const reviewsFromDb = reviewsData.docs.map((doc) => {
+      return {
+        id: doc.id,
+        data: doc.data(),
+      };
+    });
+
+    const reviewersIds = reviewsFromDb.map((review) => review.data.user.id);
+    if (reviewersIds.length > 0) {
+      const reviewersQuery = query(
+        collection(db, "users"),
+        where(documentId(), "in", reviewersIds)
+      );
+      const reviewersData = await getDocs(reviewersQuery);
+      const reviewersFromDb = reviewersData.docs.map((doc) => {
+        return { id: doc.id, data: doc.data() };
+      });
+      setReviewers(reviewersFromDb);
+      setReviews(reviewsFromDb);
+    } else {
+      setReviewers([]);
+      setReviews([]);
+    }
+  };
 
   const fetchContentDetails = async () => {
     if (contentId) {
@@ -30,58 +130,7 @@ export default function ContentPage() {
       const content = await getDoc(contentRef);
 
       if (content.exists()) {
-        const contentInfoFromDb = content.data();
-        setContentInfo(contentInfoFromDb);
-        const authorRef = doc(db, "users", contentInfoFromDb.owner.id);
-        const author = await getDoc(authorRef);
-        const authorInfo = author.data();
-        setAuthor(authorInfo);
-
-        const tagsIds = contentInfoFromDb.tags.map((tag) => {
-          return tag.id;
-        });
-        const tagsQuery = query(
-          collection(db, "tags"),
-          where(documentId(), "in", tagsIds)
-        );
-        const tagsData = await getDocs(tagsQuery);
-        const tagsFromDb = tagsData.docs.map((doc) => {
-          return {
-            id: doc.id,
-            data: doc.data(),
-          };
-        });
-        setTags(tagsFromDb);
-
-        const reviewsQuery = query(
-          collection(db, "reviews"),
-          where("content", "==", contentRef)
-        );
-        const reviewsData = await getDocs(reviewsQuery);
-        const reviewsFromDb = reviewsData.docs.map((doc) => {
-          return {
-            id: doc.id,
-            data: doc.data(),
-          };
-        });
-
-        const reviewersIds = reviewsFromDb.map((review) => review.data.user.id);
-        if (reviewersIds.length > 0) {
-          const reviewersQuery = query(
-            collection(db, "users"),
-            where(documentId(), "in", reviewersIds)
-          );
-          const reviewersData = await getDocs(reviewersQuery);
-          const reviewersFromDb = reviewersData.docs.map((doc) => {
-            return { id: doc.id, data: doc.data() };
-          });
-          console.log(reviewers);
-          setReviewers(reviewersFromDb);
-          setReviews(reviewsFromDb);
-        } else {
-          setReviewers([]);
-          setReviews([]);
-        }
+        setContentInfo(content.data());
       } else {
         // Go to 404
       }
@@ -90,6 +139,22 @@ export default function ContentPage() {
   useEffect(() => {
     fetchContentDetails();
   }, [contentId]);
+
+  useEffect(() => {
+    if (Object.keys(contentInfo).length != 0) {
+      fetchAuthor(contentInfo);
+      fetchTags(contentInfo);
+      fetchReviews();
+    }
+  }, [contentInfo]);
+
+  useEffect(() => {
+    if (
+      Object.keys(contentInfo).length != 0 &&
+      Object.keys(userInDb).length != 0
+    )
+      checkContentOwned(contentInfo, userInDb);
+  }, [contentInfo, userInDb]);
 
   useEffect(() => {
     amplitude.getInstance().logEvent("Viewed Page: Content Details", {
@@ -120,6 +185,41 @@ export default function ContentPage() {
           </div>
         ) : (
           <div></div>
+        )}
+      </div>
+      <div>
+        {user ? (
+          <>
+            {contentOwned ? (
+              <span>You own this content</span>
+            ) : (
+              <button
+                className="btn-primary"
+                onClick={() => {
+                  amplitude
+                    .getInstance()
+                    .logEvent(
+                      "Clicked Button: Content Details - Acquire Content",
+                      {
+                        "Content ID": contentId,
+                      }
+                    );
+                  acquireContent();
+                }}
+              >
+                + Acquire Content
+              </button>
+            )}
+          </>
+        ) : (
+          <div>
+            <span className="text-sm">
+              You must sign in to acquire content.
+            </span>
+            <button className="btn-primary" disabled>
+              + Acquire Content
+            </button>
+          </div>
         )}
       </div>
       <div>
