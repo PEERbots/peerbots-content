@@ -14,7 +14,7 @@ export default function SearchForm() {
     
     return (
         <>
-            <div className="flex items-center justify-center">
+            <div className="lg:flex items-center lg:justify-center">
                   <div className="flex border-2 rounded">
                     <form onSubmit={submitSearchQuery}>
                       <input

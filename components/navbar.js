@@ -17,8 +17,8 @@ export default function Navbar() {
   const auth = getAuth(firebaseApp);
   const [modalShown, setModalShown] = useState(false);
   const [signingUp, setSigningUp] = useState(false);
-  const searchQueryRef = useRef();
   const router = useRouter();
+  
 
   function signOutOfFirebase() {
     signOut(auth)
@@ -55,12 +55,13 @@ export default function Navbar() {
       </div>
 
       {/* The Entire Navbar */}
-      <nav>
-        <div className="max-w-full justify-between mx-auto px-2 sm:px-6 lg:px-8">
-          <div className="relative lg:flex items-center justify-between h-16">
+      {/* <nav> */}
+      <nav class="items-center justify-between flex-wrap p-6">
+        <div className="lg:max-w-full mx-auto px-2 sm:px-6 lg:px-8">
+          <div className="lg:flex relative justify-between h-16">
             {/* The Left Side */}
-            <div className="left-0">
-              <div className="w-48">
+            <div className="lg:left-0">
+              <div className="lg:w-48 w-24">
                 <Link href="/">
                   <a>
                     <Image className="" src={logo} alt="Peerbots Logo" />
@@ -69,17 +70,28 @@ export default function Navbar() {
               </div>
             </div>
             {/* The Middle */}
-            <div className="inset-0">
+            <div className="lg:inset-0">
               <div className="">
                 {/* Search Bar */}
                 <SearchForm />
               </div>
             </div>
             {/* The Right Side */}
-            <div className="absolute right-0 flex sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+            <div className="absolute lg:right-0 flex sm:static sm:inset-auto sm:ml-6 sm:pr-0">
               {user.user ? (
                 <>
                   <div className="flex items-center">
+                    {user.user.photoURL ? (
+                    <img
+                    src={user.user.photoURL}
+                    className="h-8 inline-block rounded-full"
+                  ></img>
+                ) : (
+                  <img
+                    src="profile_pic.png"
+                    className="h-8 inline-block rounded-full"
+                  ></img>
+                    )}
                     <div className="px-2">
                       {} {user.user.displayName}
                     </div>
