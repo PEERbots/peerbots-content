@@ -71,10 +71,8 @@ export default function Navbar() {
             </div>
             {/* The Middle */}
             <div className="lg:inset-0">
-              <div className="">
                 {/* Search Bar */}
                 <SearchForm />
-              </div>
             </div>
             {/* The Right Side */}
             <div className="absolute lg:right-0 flex sm:static sm:inset-auto sm:ml-6 sm:pr-0">
