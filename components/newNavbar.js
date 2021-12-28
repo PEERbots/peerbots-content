@@ -19,17 +19,13 @@ import amplitude from "amplitude-js";
 
 
 export default function NewNavbar() {
-    const navigation = [
-      { name: 'My Content', href: '/my/content', current: true },
-      { name: 'Purchases', href: '/my/purchases', current: true },
-      { name: 'Listed Content', href: '/my/listedcontent', current: false },
-    ]
-    const user = useFirebaseAuth();
-    const auth = getAuth(firebaseApp);
-    const [modalShown, setModalShown] = useState(false);
-    const [signingUp, setSigningUp] = useState(false);
-    const router = useRouter();
-    console.log(user);
+        const user = useFirebaseAuth();
+        const auth = getAuth(firebaseApp);
+        const [modalShown, setModalShown] = useState(false);
+        const [signingUp, setSigningUp] = useState(false);
+        const router = useRouter();
+        console.log(user);
+        const [navigation, setNavigation] = useState([]);
 
     function signOutOfFirebase() {
         signOut(auth)
@@ -45,15 +41,22 @@ export default function NewNavbar() {
       }
     
     useEffect(() => {
-    if (user) {
+    if (user.user) {
         setModalShown(false);
+        setNavigation([
+            { name: 'My Content', href: '/my/content', current: true },
+            { name: 'Purchases', href: '/my/purchases', current: true },
+            { name: 'Listed Content', href: '/my/listedcontent', current: false },]);
+    } else {
+        setNavigation([])
     }
     }, [user]);
     
     function classNames(...classes) {
       return classes.filter(Boolean).join(' ')
     }
-  return (
+  
+    return (
             <>
         <div>
         <Dialog
@@ -72,20 +75,20 @@ export default function NewNavbar() {
           <>
           <div className="lg:max-w-full mx-auto px-2 sm:px-6 lg:px-8">
             <div className="relative flex items-center justify-between h-16">
+                {user.user ? (
               <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
                 {/* Mobile menu button*/}
-                <Disclosure.Button className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                <Disclosure.Button className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-primary focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
                   <span className="sr-only">Open main menu</span>
                   {open ? (
                     <XIcon className="block h-6 w-6" aria-hidden="true" />
                   ) : (
                     <MenuIcon className="block h-6 w-6" aria-hidden="true" />
-                  )}
-                </Disclosure.Button>
-              </div>
-              <div className="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
-                <div className="flex-shrink-0 flex items-center">
-                  <div className="block lg:hidden w-24">
+                    )}
+                    </Disclosure.Button>
+            </div>) : (
+            <div>
+            <div className="items-center block lg:hidden w-24">
                   <Link href="/">
                     <a>
                   <Image
@@ -105,6 +108,36 @@ export default function NewNavbar() {
                     </a>
                     </Link>
                     </div>
+                    </div>
+            )}
+                <div className="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">   
+                <div className="flex-shrink-0 flex items-center">
+                {user.user ? (
+                <div>
+                    <div className="block lg:hidden w-24">
+                  <Link href="/">
+                    <a>
+                  <Image
+                    src={logo}
+                    alt="Peerbots"
+                    />
+                    </a>
+                    </Link>
+                    </div>
+                    <div className="hidden lg:block w-48">
+                <Link href="/">
+                    <a>
+                  <Image
+                    src={logo}
+                    alt="Peerbots"
+                    />
+                    </a>
+                    </Link>
+                    </div>
+                    </div>
+                    ) : ( 
+                        <div></div>
+                    )}
                 </div>
                 <div className="hidden sm:block sm:ml-6">
                   <div className="flex space-x-4">
@@ -131,7 +164,7 @@ export default function NewNavbar() {
                 {/* Profile dropdown */}
                 <Menu as="div" className="ml-3 relative">
                   <div>
-                    <Menu.Button className="bg-gray-800 flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                    <Menu.Button className="flex text-sm focus:outline-none">
                       <span className="sr-only">Open user menu</span>
                         <>
                             <div className='h-8 w-8'>
@@ -164,7 +197,7 @@ export default function NewNavbar() {
                     <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
                         <Menu.Item>
                         {({ active }) => (
-                            <Link href="/">
+                            <Link href="/[userId]" as={`/${user.userInDb.id}`}>
                             <a
                             className={classNames(active ? '' : '', 'block px-4 py-2 text-sm text-gray-700')}
                             >
