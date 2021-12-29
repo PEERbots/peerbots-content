@@ -43,6 +43,7 @@ export default function ProfilePage() {
           setUserId(username);
         } else {
           // Go to 404
+          router.push("/404", "/not-found");
         }
       }
     }
