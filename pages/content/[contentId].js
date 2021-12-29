@@ -57,11 +57,13 @@ export default function ContentPage() {
   };
 
   const checkContentOwned = async (content) => {
-    if (userInDb && Object.keys(userInDb).length != 0) {
+    if (userInDb && Object.keys(userInDb).length > 0) {
       if (userInDb.id == content.owner.id) {
         setContentAuthored(true);
-        return;
+        setContentPurchased(false);
+        return true;
       }
+      setContentAuthored(false);
 
       const q = query(
         collection(db, "sales"),
