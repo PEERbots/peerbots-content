@@ -14,7 +14,7 @@ import logo from "../public/peerbots_logo.png";
 import { useFirebaseAuth } from "../auth";
 
 export default function Navbar() {
-  const user = useFirebaseAuth();
+  const { user, userInDb } = useFirebaseAuth();
   const auth = getAuth(firebaseApp);
   const [modalShown, setModalShown] = useState(false);
   const [signingUp, setSigningUp] = useState(false);
@@ -34,7 +34,7 @@ export default function Navbar() {
   }
 
   useEffect(() => {
-    if (user.user) {
+    if (user) {
       setModalShown(false);
       setNavigation([
         {
@@ -87,7 +87,7 @@ export default function Navbar() {
           <>
             <div className="lg:max-w-full mx-auto px-2 sm:px-6 lg:px-8">
               <div className="relative flex items-center justify-between h-16">
-                {user.user ? (
+                {user ? (
                   <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
                     {/* Mobile menu button*/}
                     <Disclosure.Button className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-primary focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
@@ -122,7 +122,7 @@ export default function Navbar() {
                 )}
                 <div className="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
                   <div className="flex-shrink-0 flex items-center">
-                    {user.user ? (
+                    {user ? (
                       <div>
                         <div className="block lg:hidden w-24">
                           <Link href="/">
@@ -165,7 +165,7 @@ export default function Navbar() {
                 <div className="items-center lg:block hidden">
                   <SearchForm />
                 </div>
-                {user.user ? (
+                {user ? (
                   <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                     {/* Profile dropdown */}
                     <Menu
@@ -175,23 +175,21 @@ export default function Navbar() {
                       <div className="flex items-center">
                         <Menu.Button className="flex items-center text-sm focus:outline-none">
                           <span className="sr-only">Open user menu</span>
-                          <>
-                            <div className="h-8 w-8">
-                              {user.user.photoURL ? (
-                                <img
-                                  className="rounded-full"
-                                  src={user.user.photoURL}
-                                  alt=""
-                                />
-                              ) : (
-                                <img
-                                  className="rounded-full"
-                                  src="profile_pic.png"
-                                  alt=""
-                                />
-                              )}
-                            </div>
-                          </>
+                          <div className="h-8 w-8">
+                            {user.photoURL ? (
+                              <img
+                                className="rounded-full"
+                                src={user.photoURL}
+                                alt=""
+                              />
+                            ) : (
+                              <img
+                                className="rounded-full"
+                                src="profile_pic.png"
+                                alt=""
+                              />
+                            )}
+                          </div>
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-4 w-4 stroke-gray-400 ml-2 md:block hidden"
@@ -220,10 +218,7 @@ export default function Navbar() {
                         <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
                           <Menu.Item>
                             {({ active }) => (
-                              <Link
-                                href="/[userId]"
-                                as={`/${user.userInDb.id}`}
-                              >
+                              <Link href="/[userId]" as={`/${userInDb.id}`}>
                                 <a
                                   className={classNames(
                                     active ? "" : "",
@@ -255,30 +250,28 @@ export default function Navbar() {
                     </Menu>
                   </div>
                 ) : (
-                  <>
-                    <div className="">
-                      <span>
-                        <a
-                          onClick={() => {
-                            setSigningUp(false);
-                            setModalShown(true);
-                          }}
-                          className="cursor-pointer"
-                        >
-                          Sign In
-                        </a>
-                      </span>
-                      <button
+                  <div className="">
+                    <span>
+                      <a
                         onClick={() => {
-                          setSigningUp(true);
+                          setSigningUp(false);
                           setModalShown(true);
                         }}
-                        className="btn-primary"
+                        className="cursor-pointer"
                       >
-                        Sign Up
-                      </button>
-                    </div>
-                  </>
+                        Sign In
+                      </a>
+                    </span>
+                    <button
+                      onClick={() => {
+                        setSigningUp(true);
+                        setModalShown(true);
+                      }}
+                      className="btn-primary"
+                    >
+                      Sign Up
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

@@ -1,10 +1,9 @@
 import Head from "next/head";
 import LatestContentRow from "../components/latestContentRow";
-import TrustedContentRow from "../components/trustedContentRow";
-import { useEffect } from "react";
-import amplitude from "amplitude-js";
 import SearchForm from "../components/searchForm";
-import ContentRow from "../components/contentRow";
+import TrustedContentRow from "../components/trustedContentRow";
+import amplitude from "amplitude-js";
+import { useEffect } from "react";
 
 export default function Home() {
   useEffect(() => {
@@ -22,10 +21,8 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div>
-        <div className="lg:hidden">
-          <ContentRow content={[]}>
-            <SearchForm />
-          </ContentRow>
+        <div className="lg:hidden bg-white shadow-md my-4 mx-2 p-8 rounded w-full">
+          <SearchForm />
         </div>
         <div>
           <TrustedContentRow />
