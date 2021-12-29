@@ -10,21 +10,32 @@ import {
   query,
   where,
   getDocs,
+  documentId,
 } from "firebase/firestore";
 import amplitude from "amplitude-js";
 
-export default function MyContentPage() {
+export default function MyPurchasesPage() {
   const { userInDb } = useFirebaseAuth();
-  const [content, setContent] = useState([]);
+  const [purchasedContent, setPurchasedContent] = useState([]);
   const db = getFirestore(firebaseApp);
 
-  const fetchUserContent = async () => {
+  const fetchPurchasedContent = async () => {
     if (userInDb && userInDb.id) {
       const userReference = doc(db, "users", userInDb.id);
-      // Get their content
+      // Get their purchased content Ids
+      const purchasesQuery = query(
+        collection(db, "sales"),
+        where("buyer", "==", userReference)
+      );
+      const purchasesData = await getDocs(purchasesQuery);
+      const purchasedContentIds = purchasesData.docs.map((doc) => {
+        return doc.data().content.id;
+      });
+
+      // Get purchased content
       const contentQuery = query(
         collection(db, "content"),
-        where("owner", "==", userReference)
+        where(documentId(), "in", purchasedContentIds)
       );
       const contentData = await getDocs(contentQuery);
       const contentFromDb = contentData.docs.map((doc) => {
@@ -33,36 +44,25 @@ export default function MyContentPage() {
           data: doc.data(),
         };
       });
-      setContent(contentFromDb);
+      setPurchasedContent(contentFromDb);
     }
   };
 
   useEffect(() => {
-    fetchUserContent();
+    fetchPurchasedContent();
   }, [userInDb]);
 
   useEffect(() => {
-    amplitude.getInstance().logEvent("Viewed Page: My Content");
+    amplitude.getInstance().logEvent("Viewed Page: My Purchases");
   }, []);
 
   return (
     <div>
       <CheckAuth>
-        <div> Your Content page</div>
+        <div> Your Purchases</div>
         <div>
-          <ContentRow
-            content={content.filter((contentItem) => {
-              return contentItem.data.copyOf;
-            })}
-          >
-            <h3>Your Copied Content</h3>
-          </ContentRow>
-          <ContentRow
-            content={content.filter((contentItem) => {
-              return !contentItem.data.copyOf;
-            })}
-          >
-            <h3>Your Authored Content</h3>
+          <ContentRow content={purchasedContent}>
+            <h3>Purchased Content</h3>
           </ContentRow>
         </div>
       </CheckAuth>

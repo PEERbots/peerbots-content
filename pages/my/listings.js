@@ -13,18 +13,19 @@ import {
 } from "firebase/firestore";
 import amplitude from "amplitude-js";
 
-export default function MyContentPage() {
+export default function MyListingsPage() {
   const { userInDb } = useFirebaseAuth();
   const [content, setContent] = useState([]);
   const db = getFirestore(firebaseApp);
 
-  const fetchUserContent = async () => {
+  const fetchUserListings = async () => {
     if (userInDb && userInDb.id) {
       const userReference = doc(db, "users", userInDb.id);
       // Get their content
       const contentQuery = query(
         collection(db, "content"),
-        where("owner", "==", userReference)
+        where("owner", "==", userReference),
+        where("public", "==", true)
       );
       const contentData = await getDocs(contentQuery);
       const contentFromDb = contentData.docs.map((doc) => {
@@ -38,31 +39,20 @@ export default function MyContentPage() {
   };
 
   useEffect(() => {
-    fetchUserContent();
+    fetchUserListings();
   }, [userInDb]);
 
   useEffect(() => {
-    amplitude.getInstance().logEvent("Viewed Page: My Content");
+    amplitude.getInstance().logEvent("Viewed Page: My Listings");
   }, []);
 
   return (
     <div>
       <CheckAuth>
-        <div> Your Content page</div>
+        <div> Listings</div>
         <div>
-          <ContentRow
-            content={content.filter((contentItem) => {
-              return contentItem.data.copyOf;
-            })}
-          >
-            <h3>Your Copied Content</h3>
-          </ContentRow>
-          <ContentRow
-            content={content.filter((contentItem) => {
-              return !contentItem.data.copyOf;
-            })}
-          >
-            <h3>Your Authored Content</h3>
+          <ContentRow content={content}>
+            <h3>Your Listed Content</h3>
           </ContentRow>
         </div>
       </CheckAuth>

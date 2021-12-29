@@ -1,6 +1,7 @@
 {
   "name": "peerbots-content",
   "private": true,
+  "main": "nextServerFunction.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build && next export",
@@ -15,7 +16,9 @@
     "algoliasearch": "^4.11.0",
     "amplitude-js": "^8.14.1",
     "firebase": "^9.6.1",
-    "next": "12.0.7",
+    "firebase-admin": "^10.0.1",
+    "firebase-functions": "^3.16.0",
+    "next": "^12.0.7",
     "react": "17.0.2",
     "react-dom": "17.0.2"
   },
