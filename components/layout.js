@@ -1,6 +1,6 @@
-import Navbar from "./navbar";
-import Footer from "./footer";
 import { FirebaseAuthProvider } from "../auth";
+import Footer from "./footer";
+import Navbar from "./navbar";
 
 export default function Layout({ children }) {
   return (

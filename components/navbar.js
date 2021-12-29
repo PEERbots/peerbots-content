@@ -1,31 +1,24 @@
-import AuthForm from "./authForm";
-import { useState, useEffect, useRef } from "react";
-import firebaseApp from "../firebase";
-
-import { Dialog } from "@headlessui/react";
+import { Disclosure, Menu, Transition } from "@headlessui/react";
+import { Fragment, useEffect, useState } from "react";
+import { MenuIcon, XIcon } from "@heroicons/react/outline";
 import { getAuth, signOut } from "firebase/auth";
-import { useFirebaseAuth } from "../auth";
-import { useRouter } from "next/router";
-import logo from "../public/peerbots_logo.png";
+
+import AuthForm from "./authForm";
+import { Dialog } from "@headlessui/react";
 import Image from "next/image";
 import Link from "next/link";
+import SearchForm from "./searchForm";
 import amplitude from "amplitude-js";
+import firebaseApp from "../firebase";
+import logo from "../public/peerbots_logo.png";
+import { useFirebaseAuth } from "../auth";
 
 export default function Navbar() {
-  const user = useFirebaseAuth();
+  const { user, userInDb } = useFirebaseAuth();
   const auth = getAuth(firebaseApp);
   const [modalShown, setModalShown] = useState(false);
   const [signingUp, setSigningUp] = useState(false);
-  const searchQueryRef = useRef();
-  const router = useRouter();
-
-  const submitSearchQuery = (e) => {
-    e.preventDefault();
-    router.push({
-      pathname: "/search",
-      query: { q: searchQueryRef.current.value },
-    });
-  };
+  const [navigation, setNavigation] = useState([]);
 
   function signOutOfFirebase() {
     signOut(auth)
@@ -43,8 +36,37 @@ export default function Navbar() {
   useEffect(() => {
     if (user) {
       setModalShown(false);
+      setNavigation([
+        {
+          name: "My Content",
+          href: "/my/content",
+          current: true,
+          eventName: "Clicked Link: My Content",
+          eventProps: { "Event Source": "Navbar" },
+        },
+        {
+          name: "My Purchases",
+          href: "/my/purchases",
+          current: true,
+          eventName: "Clicked Link: My Purchases",
+          eventProps: { "Event Source": "Navbar" },
+        },
+        {
+          name: "My Listings",
+          href: "/my/listings",
+          current: false,
+          eventName: "Clicked Link: My Listings",
+          eventProps: { "Event Source": "Navbar" },
+        },
+      ]);
+    } else {
+      setNavigation([]);
     }
   }, [user]);
+
+  function classNames(...classes) {
+    return classes.filter(Boolean).join(" ");
+  }
 
   return (
     <>
@@ -60,68 +82,174 @@ export default function Navbar() {
           </div>
         </Dialog>
       </div>
-
-      {/* The Entire Navbar */}
-      <nav>
-        <div className="max-w-full justify-between mx-auto px-2 sm:px-6 lg:px-8">
-          <div className="relative lg:flex items-center justify-between h-16">
-            {/* The Left Side */}
-            <div className="left-0">
-              <div className="w-48">
-                <Link href="/">
-                  <a>
-                    <Image className="" src={logo} alt="Peerbots Logo" />
-                  </a>
-                </Link>
-              </div>
-            </div>
-            {/* The Middle */}
-            <div className="inset-0">
-              <div className="">
-                {/* Search Bar */}
-                <div className="flex items-center justify-center">
-                  <div className="flex border-2 rounded">
-                    <form onSubmit={submitSearchQuery}>
-                      <input
-                        type="text"
-                        ref={searchQueryRef}
-                        name="search"
-                        className="input-base"
-                        placeholder="Search..."
-                      ></input>
-                      <button className="input-base border-l" type="submit">
-                        <svg
-                          className="w-6 h-6 text-gray-600"
-                          fill="currentColor"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
+      <Disclosure as="nav" className="">
+        {({ open }) => (
+          <>
+            <div className="lg:max-w-full mx-auto px-2 sm:px-6 lg:px-8">
+              <div className="relative flex items-center justify-between h-16">
+                {user ? (
+                  <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
+                    {/* Mobile menu button*/}
+                    <Disclosure.Button className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-primary focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                      <span className="sr-only">Open main menu</span>
+                      {open ? (
+                        <XIcon className="block h-6 w-6" aria-hidden="true" />
+                      ) : (
+                        <MenuIcon
+                          className="block h-6 w-6"
+                          aria-hidden="true"
+                        />
+                      )}
+                    </Disclosure.Button>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="items-center block lg:hidden w-24">
+                      <Link href="/">
+                        <a>
+                          <Image src={logo} alt="Peerbots" />
+                        </a>
+                      </Link>
+                    </div>
+                    <div className="hidden lg:block w-48">
+                      <Link href="/">
+                        <a>
+                          <Image src={logo} alt="Peerbots" />
+                        </a>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+                <div className="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
+                  <div className="flex-shrink-0 flex items-center">
+                    {user ? (
+                      <div>
+                        <div className="block lg:hidden w-24">
+                          <Link href="/">
+                            <a>
+                              <Image src={logo} alt="Peerbots" />
+                            </a>
+                          </Link>
+                        </div>
+                        <div className="hidden lg:block w-48">
+                          <Link href="/">
+                            <a>
+                              <Image src={logo} alt="Peerbots" />
+                            </a>
+                          </Link>
+                        </div>
+                      </div>
+                    ) : (
+                      <div></div>
+                    )}
+                  </div>
+                  <div className="hidden sm:block sm:ml-6">
+                    <div className="flex space-x-4">
+                      {navigation.map((item) => (
+                        <a
+                          key={item.name}
+                          href={item.href}
+                          className={classNames(
+                            item.current ? "hover:text-primary" : "hidden",
+                            "px-3 py-2 rounded-md text-sm font-medium"
+                          )}
+                          aria-current={item.current ? "page" : undefined}
                         >
-                          <path d="M16.32 14.9l5.39 5.4a1 1 0 0 1-1.42 1.4l-5.38-5.38a8 8 0 1 1 1.41-1.41zM10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z" />
-                        </svg>
-                      </button>
-                    </form>
+                          {item.name}
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            {/* The Right Side */}
-            <div className="absolute right-0 flex sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-              {user.user ? (
-                <>
-                  <div className="flex items-center">
-                    <div className="px-2">
-                      {} {user.user.displayName}
-                    </div>
-                    <button
-                      onClick={signOutOfFirebase}
-                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+
+                <div className="items-center lg:block hidden">
+                  <SearchForm />
+                </div>
+                {user ? (
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+                    {/* Profile dropdown */}
+                    <Menu
+                      as="div"
+                      className="border border-neutral-200 shadow-lg p-2 rounded-lg ml-3 relative"
                     >
-                      Sign Out
-                    </button>
+                      <div className="flex items-center">
+                        <Menu.Button className="flex items-center text-sm focus:outline-none">
+                          <span className="sr-only">Open user menu</span>
+                          <div className="h-8 w-8">
+                            {user.photoURL ? (
+                              <img
+                                className="rounded-full"
+                                src={user.photoURL}
+                                alt=""
+                              />
+                            ) : (
+                              <img
+                                className="rounded-full"
+                                src="profile_pic.png"
+                                alt=""
+                              />
+                            )}
+                          </div>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 stroke-gray-400 ml-2 md:block hidden"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 9l-7 7-7-7"
+                            />
+                          </svg>
+                        </Menu.Button>
+                      </div>
+                      <Transition
+                        as={Fragment}
+                        enter="transition ease-out duration-100"
+                        enterFrom="transform opacity-0 scale-95"
+                        enterTo="transform opacity-100 scale-100"
+                        leave="transition ease-in duration-75"
+                        leaveFrom="transform opacity-100 scale-100"
+                        leaveTo="transform opacity-0 scale-95"
+                      >
+                        <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                          <Menu.Item>
+                            {({ active }) => (
+                              <Link href="/[userId]" as={`/${userInDb.id}`}>
+                                <a
+                                  className={classNames(
+                                    active ? "" : "",
+                                    "block px-4 py-2 text-sm text-gray-700"
+                                  )}
+                                >
+                                  My Profile
+                                </a>
+                              </Link>
+                            )}
+                          </Menu.Item>
+                          <Menu.Item>
+                            {({ active }) => (
+                              <Link href="">
+                                <a
+                                  onClick={signOutOfFirebase}
+                                  className={classNames(
+                                    active ? "bg-gray-100" : "",
+                                    "block px-4 py-2 text-sm text-gray-700"
+                                  )}
+                                >
+                                  Sign out
+                                </a>
+                              </Link>
+                            )}
+                          </Menu.Item>
+                        </Menu.Items>
+                      </Transition>
+                    </Menu>
                   </div>
-                </>
-              ) : (
-                <>
+                ) : (
                   <div className="">
                     <span>
                       <a
@@ -144,12 +272,31 @@ export default function Navbar() {
                       Sign Up
                     </button>
                   </div>
-                </>
-              )}
+                )}
+              </div>
             </div>
-          </div>
-        </div>
-      </nav>
+
+            <Disclosure.Panel className="sm:hidden">
+              <div className="px-2 pt-2 pb-3 space-y-1">
+                {navigation.map((item) => (
+                  <Disclosure.Button
+                    key={item.name}
+                    as="a"
+                    href={item.href}
+                    className={classNames(
+                      item.current ? "hover:text-primary" : "hidden",
+                      "block px-3 py-2 rounded-md text-base font-medium"
+                    )}
+                    aria-current={item.current ? "page" : undefined}
+                  >
+                    {item.name}
+                  </Disclosure.Button>
+                ))}
+              </div>
+            </Disclosure.Panel>
+          </>
+        )}
+      </Disclosure>
     </>
   );
 }
