@@ -157,7 +157,7 @@ export default function Navbar() {
                     {/* Profile dropdown */}
                     <Menu
                       as="div"
-                      className="border-2 border-gray-200 shadow-md p-2 rounded-lg ml-3 relative"
+                      className="border border-neutral-200 shadow-lg p-2 rounded-lg ml-3 relative"
                     >
                       <div className="flex items-center">
                         <Menu.Button className="flex items-center text-sm focus:outline-none">
@@ -180,17 +180,17 @@ export default function Navbar() {
                             </div>
                           </>
                           <svg
-                            width="20"
-                            height="20"
-                            viewBox="-2.5 -5 75 60"
-                            preserveAspectRatio="none"
-                            className="ml-2 stroke-primary"
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 stroke-gray-400 ml-2 md:block hidden"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
                           >
                             <path
-                              d="M0,0 l35,50 l35,-50"
-                              fill="none"
-                              stroke-linecap="round"
-                              stroke-width="5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 9l-7 7-7-7"
                             />
                           </svg>
                         </Menu.Button>
