@@ -35,12 +35,35 @@ export default function ContentPage() {
   const [contentPurchased, setContentPurchased] = useState(false);
   const [copies, setCopies] = useState([]);
 
+  const [editingName, setEditingName] = useState(false);
+  const [editingDescription, setEditingDescription] = useState(false);
+  const updateNameInput = useRef();
+  const updateDescriptionInput = useRef();
+
   const copyAsInput = useRef();
 
   const db = getFirestore(firebaseApp);
 
   const router = useRouter();
   const { contentId } = router.query;
+
+  const updateName = async (e) => {
+    e.preventDefault();
+    const contentRef = doc(db, "content", contentId);
+    await updateDoc(contentRef, { name: updateNameInput.current.value });
+    setEditingName(false);
+    fetchContentDetails();
+  };
+
+  const updateDescription = async (e) => {
+    e.preventDefault();
+    const contentRef = doc(db, "content", contentId);
+    await updateDoc(contentRef, {
+      description: updateDescriptionInput.current.value,
+    });
+    setEditingDescription(false);
+    fetchContentDetails();
+  };
 
   const listPublicly = async (e) => {
     if (contentAuthored) {
@@ -245,8 +268,55 @@ export default function ContentPage() {
       {/* Summary section */}
       <div className="bg-white shadow-md my-4 mx-2 rounded p-4">
         <div>
-          <h1 className="text-2xl">{contentInfo.name}</h1>
+          <span className="text-2xl">{contentInfo.name}</span>
+          {user && contentAuthored && (
+            <button
+              className="border border-gray-400 mx-2 p-2 hover:bg-gray-400 hover:text-white rounded"
+              onClick={() => {
+                setEditingName(true);
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 inline-block"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+              </svg>{" "}
+              Edit
+            </button>
+          )}
         </div>
+        {editingName && (
+          <div>
+            <form onSubmit={updateName}>
+              <label>New Name</label>
+              <input
+                type="text"
+                ref={updateNameInput}
+                className="input-base form-input"
+                name="updatedName"
+                placeholder={contentInfo.name}
+              ></input>
+              <button
+                className="btn-primary"
+                type="submit"
+                onClick={updateName}
+              >
+                {" "}
+                Update Name
+              </button>
+              <button
+                onClick={() => {
+                  setEditingName(false);
+                }}
+              >
+                Cancel
+              </button>
+            </form>
+          </div>
+        )}
         <div>
           <span className="text-xs">Authored by</span>
           {author ? (
@@ -323,7 +393,56 @@ export default function ContentPage() {
 
       {/* Description Section */}
       <div className="bg-white shadow-md my-4 mx-2 rounded p-4 ">
-        <div>{contentInfo.description}</div>
+        <div>
+          {contentInfo.description}
+          {user && contentAuthored && (
+            <button
+              className="border border-gray-400 mx-2 p-2 hover:bg-gray-400 hover:text-white rounded"
+              onClick={() => {
+                setEditingDescription(true);
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 inline-block"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+              </svg>{" "}
+              Edit
+            </button>
+          )}
+        </div>
+        {editingDescription && (
+          <div>
+            <form onSubmit={updateDescription}>
+              <label>New Description</label>
+              <textarea
+                type="text"
+                ref={updateDescriptionInput}
+                className="input-base form-input"
+                name="updatedDescription"
+                placeholder={contentInfo.description}
+              ></textarea>
+              <button
+                className="btn-primary"
+                type="submit"
+                onClick={updateDescription}
+              >
+                {" "}
+                Update Description
+              </button>
+              <button
+                onClick={() => {
+                  setEditingDescription(false);
+                }}
+              >
+                Cancel
+              </button>
+            </form>
+          </div>
+        )}
       </div>
 
       {/* Public Listing Section */}
@@ -455,9 +574,9 @@ export default function ContentPage() {
                   stroke="currentColor"
                 >
                   <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
                     d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
                   />
                 </svg>
@@ -476,9 +595,9 @@ export default function ContentPage() {
                   stroke="currentColor"
                 >
                   <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
                     d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
                   />
                 </svg>
