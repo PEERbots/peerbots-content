@@ -1,28 +1,23 @@
-/* This example requires Tailwind CSS v2.0+ */
-import { Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
+import { Fragment, useEffect, useState } from "react";
 import { MenuIcon, XIcon } from "@heroicons/react/outline";
-import Image from "next/image";
-import { useFirebaseAuth } from "../auth";
-import AuthForm from "./authForm";
-import { useState, useEffect, useRef } from "react";
-import firebaseApp from "../firebase";
-import SearchForm from "./searchForm";
-import { Dialog } from "@headlessui/react";
-
 import { getAuth, signOut } from "firebase/auth";
-import { useRouter } from "next/router";
-import logo from "../public/peerbots_logo.png";
+
+import AuthForm from "./authForm";
+import { Dialog } from "@headlessui/react";
+import Image from "next/image";
 import Link from "next/link";
+import SearchForm from "./searchForm";
 import amplitude from "amplitude-js";
+import firebaseApp from "../firebase";
+import logo from "../public/peerbots_logo.png";
+import { useFirebaseAuth } from "../auth";
 
 export default function Navbar() {
   const user = useFirebaseAuth();
   const auth = getAuth(firebaseApp);
   const [modalShown, setModalShown] = useState(false);
   const [signingUp, setSigningUp] = useState(false);
-  const router = useRouter();
-  console.log(user);
   const [navigation, setNavigation] = useState([]);
 
   function signOutOfFirebase() {
@@ -42,9 +37,27 @@ export default function Navbar() {
     if (user.user) {
       setModalShown(false);
       setNavigation([
-        { name: "My Content", href: "/my/content", current: true },
-        { name: "Purchases", href: "/my/purchases", current: true },
-        { name: "Listed Content", href: "/my/listedcontent", current: false },
+        {
+          name: "My Content",
+          href: "/my/content",
+          current: true,
+          eventName: "Clicked Link: My Content",
+          eventProps: { "Event Source": "Navbar" },
+        },
+        {
+          name: "My Purchases",
+          href: "/my/purchases",
+          current: true,
+          eventName: "Clicked Link: My Purchases",
+          eventProps: { "Event Source": "Navbar" },
+        },
+        {
+          name: "My Listings",
+          href: "/my/listings",
+          current: false,
+          eventName: "Clicked Link: My Listings",
+          eventProps: { "Event Source": "Navbar" },
+        },
       ]);
     } else {
       setNavigation([]);
