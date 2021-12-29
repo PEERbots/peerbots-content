@@ -12,6 +12,7 @@ import {
   addDoc,
   Timestamp,
   limit,
+  updateDoc,
 } from "firebase/firestore";
 import { useState, useEffect, useRef } from "react";
 import amplitude from "amplitude-js";
@@ -38,6 +39,14 @@ export default function ContentPage() {
 
   const router = useRouter();
   const { contentId } = router.query;
+
+  const listPublicly = async (e) => {
+    if (contentAuthored) {
+      const contentRef = doc(db, "content", contentId);
+      await updateDoc(contentRef, { public: true, price: 0 });
+      fetchContentDetails();
+    }
+  };
 
   const copyContent = async (e) => {
     e.preventDefault();
@@ -210,6 +219,7 @@ export default function ContentPage() {
 
   return (
     <div>
+      {/* Summary section */}
       <div className="bg-white shadow-md my-4 mx-2 rounded p-4">
         <div>
           <h1 className="text-2xl">{contentInfo.name}</h1>
@@ -238,7 +248,7 @@ export default function ContentPage() {
           )}
         </div>
         <div className="my-2">
-          {!contentInfo.copyOf && reviews ? (
+          {!contentInfo.copyOf && contentInfo.public && reviews ? (
             <>
               {reviews.length > 0 ? (
                 <span>
@@ -287,189 +297,201 @@ export default function ContentPage() {
             ))}
         </div>
       </div>
+
+      {/* Description Section */}
       <div className="bg-white shadow-md my-4 mx-2 rounded p-4 ">
         <div>{contentInfo.description}</div>
       </div>
 
-      {!contentInfo.copyOf ? (
-        <>
-          {reviews.length > 0 ? (
-            <div className="bg-white shadow-md my-4 mx-2 rounded p-4 ">
-              <div>
-                <h3 className="text-sm font-bold">Reviews</h3>
-                {reviews.map((review) => (
-                  <div
-                    key={review.id}
-                    className="bg-white shadow-lg rounded p-4 w-64"
-                  >
-                    <div className="flex justify-between mb-2">
-                      <div>
-                        {review.data.rating}{" "}
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 inline-block"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      </div>
-
-                      <div className="align-middle">
-                        <span>
-                          <img
-                            src={
-                              reviewers.filter((reviewer) => {
-                                return reviewer.id == review.data.user.id;
-                              })[0].data.photoUrl
-                            }
-                            className="rounded-full h-6 w-6 inline-block mr-1"
-                          ></img>
-                        </span>
-                        <span className="text-sm">
-                          {
-                            reviewers.filter((reviewer) => {
-                              return reviewer.id == review.data.user.id;
-                            })[0].data.name
-                          }
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-sm text-gray-700">
-                      {review.data.description}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <></>
-          )}
-        </>
-      ) : (
-        <div>{""}</div>
+      {/* Public Listing Section */}
+      {user && contentAuthored && !contentInfo.copyOf && !contentInfo.public && (
+        <div className="bg-white shadow-md my-4 mx-2 rounded p-4">
+          <div className="text-base">
+            Would you like to list this content publicly?
+          </div>
+          <div className="text-sm">
+            Listing content will make it publicly available to others for free!
+            Listing content publicly will allow others to copy it and use it on
+            the Peerbots app.{" "}
+          </div>
+          <div className="text-sm font-bold">
+            Once content is public it can not be made private.
+          </div>
+          <div>
+            <button className="btn-primary" onClick={listPublicly}>
+              List this publicly for free!
+            </button>
+          </div>
+        </div>
       )}
 
-      <div>
-        <div>
-          {!contentInfo.copyOf && reviews ? (
-            <>
-              {reviews.length > 0 ? (
-                <span>
-                  <span className="text-accent-hc font-bold px-2 text-base">
-                    {reviews.reduce((sum, { data }) => {
-                      return sum + data.rating;
-                    }, 0) / reviews.length}
+      {/* Reviews Section */}
+      {contentInfo.public && !contentInfo.copyOf && reviews.length > 0 && (
+        <div className="bg-white shadow-md my-4 mx-2 rounded p-4 ">
+          <div>
+            <h3 className="text-sm font-bold">Reviews</h3>
+            {reviews.map((review) => (
+              <div
+                key={review.id}
+                className="bg-white shadow-lg rounded p-4 w-64"
+              >
+                <div className="flex justify-between mb-2">
+                  <div>
+                    {review.data.rating}{" "}
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-4 w-4 inline-block"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                      />
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
-                  </span>
-                  <span className="text-sm">({reviews.length} reviews)</span>
+                  </div>
+
+                  <div className="align-middle">
+                    <span>
+                      <img
+                        src={
+                          reviewers.filter((reviewer) => {
+                            return reviewer.id == review.data.user.id;
+                          })[0].data.photoUrl
+                        }
+                        className="rounded-full h-6 w-6 inline-block mr-1"
+                      ></img>
+                    </span>
+                    <span className="text-sm">
+                      {
+                        reviewers.filter((reviewer) => {
+                          return reviewer.id == review.data.user.id;
+                        })[0].data.name
+                      }
+                    </span>
+                  </div>
+                </div>
+                <div className="text-sm text-gray-700">
+                  {review.data.description}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Acquisition or Statistics Section */}
+      {contentInfo.public && !contentInfo.copyOf && (
+        <div className="bg-white shadow-md my-4 mx-2 rounded p-4 ">
+          <div>
+            {reviews && reviews.length > 0 ? (
+              <span>
+                <span className="text-accent-hc font-bold px-2 text-base">
+                  {reviews.reduce((sum, { data }) => {
+                    return sum + data.rating;
+                  }, 0) / reviews.length}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 inline-block"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                    />
+                  </svg>
                 </span>
-              ) : (
-                <span className="text-xs">No reviews yet</span>
+                <span className="text-sm">({reviews.length} reviews)</span>
+              </span>
+            ) : (
+              <span className="text-xs">No reviews yet</span>
+            )}
+          </div>
+          <div>
+            {contentInfo.price == 0 ? (
+              <span className="uppercase">Free</span>
+            ) : (
+              <span>
+                {new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "USD",
+                }).format(contentInfo.price)}
+              </span>
+            )}
+          </div>
+          {user ? (
+            <>
+              {!(contentAuthored || contentPurchased) && (
+                <div>
+                  <button
+                    className="btn-primary"
+                    onClick={() => {
+                      amplitude
+                        .getInstance()
+                        .logEvent(
+                          "Clicked Button: Content Details - Acquire Content",
+                          {
+                            "Content ID": contentId,
+                          }
+                        );
+                      acquireContent();
+                    }}
+                  >
+                    + Acquire Content
+                  </button>{" "}
+                </div>
               )}
             </>
           ) : (
-            <span>{""}</span>
-          )}
-        </div>
-        <div>
-          {contentInfo.copyOf ? (
-            <span>
-              This is a copy of{" "}
-              <Link
-                href="/content/[contentId]"
-                as={`/content/${contentInfo.copyOf.id}`}
-              >
-                this content
-              </Link>
-            </span>
-          ) : (
             <div>
-              {contentInfo.price == 0 ? (
-                <span className="uppercase">Free</span>
-              ) : (
-                <span>
-                  {new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: "USD",
-                  }).format(contentInfo.price)}
-                </span>
-              )}
+              <span className="text-sm">
+                You must sign in to acquire content.
+              </span>
+              <button className="btn-primary" disabled>
+                + Acquire Content
+              </button>
             </div>
           )}
         </div>
-        {user ? (
-          <>
-            {contentAuthored || contentPurchased ? (
-              <>
-                {contentAuthored ? (
-                  <span>You authored this content</span>
-                ) : (
-                  <span>You purchased this content</span>
-                )}
-                <form onSubmit={copyContent}>
-                  <label>Copy As</label>
-                  <input
-                    type="text"
-                    ref={copyAsInput}
-                    className="input-base form-input"
-                    name="copyAs"
-                    placeholder={contentInfo.name}
-                  ></input>
-                  <button
-                    className="btn-primary"
-                    type="submit"
-                    onClick={copyContent}
-                  >
-                    {" "}
-                    Copy to App!
-                  </button>
-                </form>
-              </>
-            ) : (
-              <button
-                className="btn-primary"
-                onClick={() => {
-                  amplitude
-                    .getInstance()
-                    .logEvent(
-                      "Clicked Button: Content Details - Acquire Content",
-                      {
-                        "Content ID": contentId,
-                      }
-                    );
-                  acquireContent();
-                }}
-              >
-                + Acquire Content
-              </button>
-            )}
-          </>
-        ) : (
-          <div>
-            <span className="text-sm">
-              You must sign in to acquire content.
-            </span>
-            <button className="btn-primary" disabled>
-              + Acquire Content
-            </button>
-          </div>
-        )}
-      </div>
+      )}
 
+      {/* Link to original section */}
+      {contentInfo.copyOf && (
+        <div className="bg-white shadow-md my-4 mx-2 rounded p-4">
+          <span>
+            This is a copy of{" "}
+            <Link
+              href="/content/[contentId]"
+              as={`/content/${contentInfo.copyOf.id}`}
+            >
+              original content link
+            </Link>
+          </span>
+        </div>
+      )}
+
+      {/* Copy this content section */}
+      {user && (contentAuthored || contentPurchased) && (
+        <div className="bg-white shadow-md my-4 mx-2 rounded p-4">
+          <form onSubmit={copyContent}>
+            <label>Copy As</label>
+            <input
+              type="text"
+              ref={copyAsInput}
+              className="input-base form-input"
+              name="copyAs"
+              placeholder={contentInfo.name}
+            ></input>
+            <button className="btn-primary" type="submit" onClick={copyContent}>
+              {" "}
+              Copy to App!
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Copies Section */}
       <div>
         {copies.length > 0 ? (
           <div>
