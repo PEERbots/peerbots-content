@@ -227,6 +227,7 @@ export default function ContentPage() {
         setContentInfo(content.data());
       } else {
         // Go to 404
+        router.push("/404", "/not-found");
       }
     }
   };
