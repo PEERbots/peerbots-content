@@ -28,6 +28,8 @@ export default function ContentPage() {
   const [author, setAuthor] = useState({});
   const [reviews, setReviews] = useState([]);
   const [reviewers, setReviewers] = useState([]);
+  const [copiesCount, setCopiesCount] = useState(null);
+  const [salesCount, setSalesCount] = useState(null);
   const [tags, setTags] = useState([]);
   const [contentAuthored, setContentAuthored] = useState(false);
   const [contentPurchased, setContentPurchased] = useState(false);
@@ -172,6 +174,25 @@ export default function ContentPage() {
       setReviews([]);
     }
   };
+  const fetchSalesCount = async () => {
+    const contentRef = doc(db, "content", contentId);
+    const salesQuery = query(
+      collection(db, "sales"),
+      where("content", "==", contentRef)
+    );
+    const salesData = await getDocs(salesQuery);
+    setSalesCount(salesData.docs.length);
+  };
+
+  const fetchCopiesCount = async () => {
+    const contentRef = doc(db, "content", contentId);
+    const copiesQuery = query(
+      collection(db, "content"),
+      where("copyOf", "==", contentRef)
+    );
+    const copiesData = await getDocs(copiesQuery);
+    setCopiesCount(copiesData.docs.length);
+  };
 
   const fetchContentDetails = async () => {
     if (contentId) {
@@ -194,6 +215,8 @@ export default function ContentPage() {
       fetchAuthor(contentInfo);
       fetchTags(contentInfo);
       fetchReviews();
+      fetchSalesCount();
+      fetchCopiesCount();
     }
   }, [contentInfo]);
 
@@ -417,6 +440,49 @@ export default function ContentPage() {
                   style: "currency",
                   currency: "USD",
                 }).format(contentInfo.price)}
+              </span>
+            )}
+          </div>
+          <div>
+            {salesCount && (
+              <span>
+                {" "}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 inline-block"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                  />
+                </svg>
+                {salesCount} sales{" "}
+              </span>
+            )}
+          </div>
+          <div>
+            {copiesCount && (
+              <span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 inline-block"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
+                  />
+                </svg>
+                {copiesCount} copies
               </span>
             )}
           </div>
