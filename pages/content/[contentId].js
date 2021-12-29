@@ -31,6 +31,7 @@ export default function ContentPage() {
   const [copiesCount, setCopiesCount] = useState(null);
   const [salesCount, setSalesCount] = useState(null);
   const [tags, setTags] = useState([]);
+
   const [contentAuthored, setContentAuthored] = useState(false);
   const [contentPurchased, setContentPurchased] = useState(false);
   const [copies, setCopies] = useState([]);
@@ -244,6 +245,9 @@ export default function ContentPage() {
   }, [contentInfo]);
 
   useEffect(() => {
+    if (!user) {
+      setCopies([]);
+    }
     if (
       contentInfo &&
       userInDb &&
@@ -255,7 +259,7 @@ export default function ContentPage() {
         fetchCopies();
       }
     }
-  }, [contentInfo, userInDb]);
+  }, [contentInfo, user, userInDb]);
 
   useEffect(() => {
     amplitude.getInstance().logEvent("Viewed Page: Content Details", {
@@ -297,7 +301,7 @@ export default function ContentPage() {
                 ref={updateNameInput}
                 className="input-base form-input"
                 name="updatedName"
-                placeholder={contentInfo.name}
+                defaultValue={contentInfo.name}
               ></input>
               <button
                 className="btn-primary"
@@ -423,7 +427,7 @@ export default function ContentPage() {
                 ref={updateDescriptionInput}
                 className="input-base form-input"
                 name="updatedDescription"
-                placeholder={contentInfo.description}
+                defaultValue={contentInfo.description}
               ></textarea>
               <button
                 className="btn-primary"
@@ -666,7 +670,7 @@ export default function ContentPage() {
               ref={copyAsInput}
               className="input-base form-input"
               name="copyAs"
-              placeholder={contentInfo.name}
+              defaultValue={`Copy of ${contentInfo.name}`}
             ></input>
             <button className="btn-primary" type="submit" onClick={copyContent}>
               {" "}
