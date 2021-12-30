@@ -236,7 +236,7 @@ export default function ContentPage() {
   };
 
   const fetchUserReview = async () => {
-    if (userInDb && contentPurchased) {
+    if (userInDb && Object.keys(userInDb).length > 0 && contentPurchased) {
       const userReviewQuery = query(
         collection(db, "reviews"),
         where("content", "==", doc(db, "content", contentId)),
@@ -317,9 +317,9 @@ export default function ContentPage() {
       const contentOwned = checkContentOwned(contentInfo);
       if (contentOwned) {
         fetchCopies();
-        fetchUserReview();
       }
     }
+    fetchUserReview();
   }, [contentInfo, user, userInDb]);
 
   useEffect(() => {
