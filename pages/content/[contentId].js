@@ -543,7 +543,7 @@ export default function ContentPage() {
                 <ReactStars
                   count={5}
                   value={userReview.data.rating}
-                  editable={true}
+                  edit={true}
                   onChange={(newVal) => {
                     setNewUserReviewRating(newVal);
                   }}
@@ -551,7 +551,7 @@ export default function ContentPage() {
               ) : (
                 <ReactStars
                   count={5}
-                  editable={true}
+                  edit={true}
                   onChange={(newVal) => {
                     setNewUserReviewRating(newVal);
                   }}
@@ -599,7 +599,7 @@ export default function ContentPage() {
                     <ReactStars
                       count={5}
                       value={review.data.rating}
-                      editable={false}
+                      edit={false}
                     />
                   </div>
 
