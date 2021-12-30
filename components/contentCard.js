@@ -155,7 +155,11 @@ export default function ContentCard({ content, author, rating, tags }) {
           <div>
             {tags &&
               tags.map((eachTag) => (
-                <Link href="/tag/[tagId]" as={`/tag/${eachTag.id}`}>
+                <Link
+                  key={eachTag.id}
+                  href="/tag/[tagId]"
+                  as={`/tag/${eachTag.id}`}
+                >
                   <span
                     key={eachTag.id}
                     style={{
