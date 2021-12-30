@@ -57,7 +57,6 @@ export default function ContentPage() {
   const updateReview = async (e) => {
     e.preventDefault();
     if (contentPurchased && Object.keys(userInDb).length > 0) {
-      console.log("User and purchased content");
       if (hasReview) {
         const updatedReviewData = await updateDoc(
           doc(db, "reviews", userReview.id),
@@ -73,7 +72,6 @@ export default function ContentPage() {
           rating: newUserReviewRating,
           description: reviewDescriptionInput.current.value,
         };
-        console.log(newReview);
         const addedReviewData = await addDoc(
           collection(db, "reviews"),
           newReview
