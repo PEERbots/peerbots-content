@@ -155,16 +155,18 @@ export default function ContentCard({ content, author, rating, tags }) {
           <div>
             {tags &&
               tags.map((eachTag) => (
-                <span
-                  key={eachTag.id}
-                  style={{
-                    background: eachTag.data.color,
-                    color: eachTag.data.textColor,
-                  }}
-                  className="rounded-3xl px-2 mx-1 text-xs"
-                >
-                  {eachTag.data.name}
-                </span>
+                <Link href="/tag/[tagId]" as={`/tag/${eachTag.id}`}>
+                  <span
+                    key={eachTag.id}
+                    style={{
+                      background: eachTag.data.color,
+                      color: eachTag.data.textColor,
+                    }}
+                    className="rounded-3xl px-2 mx-1 text-xs"
+                  >
+                    {eachTag.data.name}
+                  </span>
+                </Link>
               ))}
           </div>
           <div className="flex items-center justify-between">
