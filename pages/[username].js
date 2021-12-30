@@ -26,7 +26,6 @@ export default function ProfilePage() {
   const { user, userInDb } = useFirebaseAuth();
   const [viewerIsAuthor, setViewerIsAuthor] = useState(false);
   const [editingName, setEditingName] = useState(false);
-  const [editingUserName, setEditingUserName] = useState(false);
   const [editingDescription, setEditingDescription] = useState(false);
   const [editingUsername, setEditingUsername] = useState(false);
   const updateNameInput = useRef();
