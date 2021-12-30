@@ -10,7 +10,6 @@ import Link from "next/link";
 import SearchForm from "./searchForm";
 import amplitude from "amplitude-js";
 import firebaseApp from "../firebase";
-import logo from "../public/peerbots_logo.png";
 import { useFirebaseAuth } from "../auth";
 
 export default function Navbar() {
@@ -107,14 +106,26 @@ export default function Navbar() {
                     <div className="items-center block lg:hidden w-24">
                       <Link href="/">
                         <a>
-                          <Image src={logo} alt="Peerbots" />
+                          <Image
+                            src="/peerbots_logo.png"
+                            alt="Peerbots Logo"
+                            layout="responsive"
+                            width={192}
+                            height={33}
+                          />
                         </a>
                       </Link>
                     </div>
                     <div className="hidden lg:block w-48">
                       <Link href="/">
                         <a>
-                          <Image src={logo} alt="Peerbots" />
+                          <Image
+                            src="/peerbots_logo.png"
+                            alt="Peerbots Logo"
+                            layout="responsive"
+                            width={192}
+                            height={33}
+                          />
                         </a>
                       </Link>
                     </div>
@@ -127,14 +138,26 @@ export default function Navbar() {
                         <div className="block lg:hidden w-24">
                           <Link href="/">
                             <a>
-                              <Image src={logo} alt="Peerbots" />
+                              <Image
+                                src="/peerbots_logo.png"
+                                alt="Peerbots Logo"
+                                layout="responsive"
+                                width={192}
+                                height={33}
+                              />
                             </a>
                           </Link>
                         </div>
                         <div className="hidden lg:block w-48">
                           <Link href="/">
                             <a>
-                              <Image src={logo} alt="Peerbots" />
+                              <Image
+                                src="/peerbots_logo.png"
+                                alt="Peerbots Logo"
+                                layout="responsive"
+                                width={192}
+                                height={33}
+                              />
                             </a>
                           </Link>
                         </div>
