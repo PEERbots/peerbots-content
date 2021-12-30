@@ -1,6 +1,14 @@
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Fragment, useEffect, useState } from "react";
 import { MenuIcon, XIcon } from "@heroicons/react/outline";
+import {
+  collection,
+  doc,
+  getDocs,
+  getFirestore,
+  query,
+  where,
+} from "firebase/firestore";
 import { getAuth, signOut } from "firebase/auth";
 
 import AuthForm from "./authForm";
@@ -18,7 +26,24 @@ export default function Navbar() {
   const auth = getAuth(firebaseApp);
   const [modalShown, setModalShown] = useState(false);
   const [signingUp, setSigningUp] = useState(false);
+  const [hasListedContent, setHasListedContent] = useState(false);
   const [navigation, setNavigation] = useState([]);
+  const db = getFirestore(firebaseApp);
+
+  const checkListedContent = async () => {
+    if (userInDb) {
+      // Get their listed content
+      const listedContentQuery = query(
+        collection(db, "content"),
+        where("owner", "==", doc(db, "users", userInDb.id)),
+        where("public", "==", true)
+      );
+      const listedContentData = await getDocs(listedContentQuery);
+      if (listedContentData.docs.length > 0) {
+        setHasListedContent(true);
+      }
+    }
+  };
 
   function signOutOfFirebase() {
     signOut(auth)
@@ -36,6 +61,7 @@ export default function Navbar() {
   useEffect(() => {
     if (user) {
       setModalShown(false);
+      checkListedContent();
       setNavigation([
         {
           name: "My Content",
@@ -54,7 +80,7 @@ export default function Navbar() {
         {
           name: "My Listings",
           href: "/my/listings",
-          current: false,
+          current: hasListedContent,
           eventName: "Clicked Link: My Listings",
           eventProps: { "Event Source": "Navbar" },
         },
@@ -62,7 +88,7 @@ export default function Navbar() {
     } else {
       setNavigation([]);
     }
-  }, [user]);
+  }, [userInDb, hasListedContent]);
 
   function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
