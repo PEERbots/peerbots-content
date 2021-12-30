@@ -8,10 +8,12 @@ import {
   doc,
   getDocs,
   getDoc,
+  updateDoc,
 } from "firebase/firestore";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ContentRow from "../components/contentRow";
 import amplitude from "amplitude-js";
+import { useFirebaseAuth } from "../auth";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -20,6 +22,17 @@ export default function ProfilePage() {
   const [userInfo, setUserInfo] = useState({});
   const [content, setContent] = useState([]);
   const db = getFirestore(firebaseApp);
+
+  const { user, userInDb } = useFirebaseAuth();
+  const [viewerIsAuthor, setViewerIsAuthor] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [editingUserName, setEditingUserName] = useState(false);
+  const [editingDescription, setEditingDescription] = useState(false);
+  const [editingUsername, setEditingUsername] = useState(false);
+  const updateNameInput = useRef();
+  const updateDescriptionInput = useRef();
+  const updateUsernameInput = useRef();
+  const [usernameErrorMessage, setUsernameErrorMessage] = useState("");
 
   const fetchUserDetails = async () => {
     if (username) {
@@ -68,6 +81,48 @@ export default function ProfilePage() {
       setContent(contentFromDb);
     }
   };
+
+  const updateName = async (e) => {
+    e.preventDefault();
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, { name: updateNameInput.current.value });
+    setEditingName(false);
+    fetchUserDetails();
+  };
+
+  const updateDescription = async (e) => {
+    e.preventDefault();
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, {
+      description: updateDescriptionInput.current.value,
+    });
+    setEditingDescription(false);
+    fetchUserDetails();
+  };
+
+  const updateUsername = async (e) => {
+    e.preventDefault();
+    const newUsername = updateUsernameInput.current.value;
+    const usernameQuery = query(
+      collection(db, "users"),
+      where("username", "==", newUsername)
+    );
+    const usersWithUsername = await getDocs(usernameQuery);
+    if (usersWithUsername.docs.length > 0) {
+      setUsernameErrorMessage(
+        "Username is already taken. Try another one please."
+      );
+    } else {
+      const userRef = doc(db, "users", userId);
+      await updateDoc(userRef, {
+        username: newUsername,
+      });
+      setEditingUsername(false);
+      setUsernameErrorMessage("");
+      fetchUserDetails();
+    }
+  };
+
   useEffect(() => {
     fetchUserDetails();
     amplitude.getInstance().logEvent("Viewed Page: Profile Details", {
@@ -79,20 +134,189 @@ export default function ProfilePage() {
     fetchUserContent();
   }, [userId]);
 
+  useEffect(() => {
+    if (userInDb && userId && Object.keys(userInDb).length > 0) {
+      setViewerIsAuthor(userInDb.id == userId);
+    } else {
+      setViewerIsAuthor(false);
+    }
+  }, [userInDb, userId]);
+
   return (
     <div>
       {userInfo ? (
-        <div>
-          <div>{userInfo.name}</div>
-          <div>
-            <img src={userInfo.photoUrl}></img>
+        <>
+          <div className="bg-white shadow-md my-4 mx-2 p-8 rounded">
+            <div className="mb-8">
+              <img
+                src={userInfo.photoUrl}
+                className="rounded-full h-12 w-12 inline-block mr-4"
+              />
+              {userInfo.name}
+              {user && viewerIsAuthor && (
+                <button
+                  className="border border-gray-400 m-2 p-2 hover:bg-gray-400 hover:text-white rounded"
+                  onClick={() => {
+                    setEditingName(true);
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6 inline-block"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                  </svg>{" "}
+                  Edit
+                </button>
+              )}
+            </div>
+            {editingName && (
+              <div>
+                <form onSubmit={updateName}>
+                  <label>New Name</label>
+                  <input
+                    type="text"
+                    ref={updateNameInput}
+                    className="input-base form-input"
+                    name="updatedName"
+                    defaultValue={userInDb.data.name}
+                  ></input>
+                  <button
+                    className="btn-primary"
+                    type="submit"
+                    onClick={updateName}
+                  >
+                    {" "}
+                    Update Name
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingName(false);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </form>
+              </div>
+            )}
+            <div>
+              {userInfo.description && <span>{userInfo.description}</span>}
+              {user && viewerIsAuthor && (
+                <button
+                  className="border border-gray-400 m-2 p-2 hover:bg-gray-400 hover:text-white rounded"
+                  onClick={() => {
+                    setEditingDescription(true);
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6 inline-block"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                  </svg>{" "}
+                  Edit Description
+                </button>
+              )}
+            </div>
+            {editingDescription && (
+              <div>
+                <form onSubmit={updateDescription}>
+                  <label>New Description</label>
+                  <textarea
+                    type="text"
+                    ref={updateDescriptionInput}
+                    className="input-base form-input"
+                    name="updatedDescription"
+                    defaultValue={userInDb.data.description}
+                  ></textarea>
+                  <button
+                    className="btn-primary"
+                    type="submit"
+                    onClick={updateDescription}
+                  >
+                    {" "}
+                    Update Description
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingDescription(false);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </form>
+              </div>
+            )}
+            <div>
+              {user && viewerIsAuthor && userInfo.username && (
+                <span>
+                  Username: <span>{userInfo.username}</span>
+                </span>
+              )}
+              {user && viewerIsAuthor && (
+                <button
+                  className="border border-gray-400 m-2 p-2 hover:bg-gray-400 hover:text-white rounded"
+                  onClick={() => {
+                    setEditingUsername(true);
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6 inline-block"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                  </svg>{" "}
+                  Edit username
+                </button>
+              )}
+            </div>
+            {editingUsername && (
+              <div>
+                <form onSubmit={updateUsername}>
+                  <label>New username</label>
+                  <input
+                    type="text"
+                    ref={updateUsernameInput}
+                    className="input-base form-input"
+                    name="updatedusername"
+                    defaultValue={userInDb.data.username}
+                  ></input>
+                  <button
+                    className="btn-primary"
+                    type="submit"
+                    onClick={updateUsername}
+                  >
+                    {" "}
+                    Update username
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingUsername(false);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <span className="text-secondary text-sm mx-4">
+                    {usernameErrorMessage}
+                  </span>
+                </form>
+              </div>
+            )}
           </div>
           <div>
-            <ContentRow content={content}>
-              <h3>Content Authored by {userInfo.name}</h3>
-            </ContentRow>
+            <div>
+              <ContentRow content={content}>
+                <h3>Content Authored by {userInfo.name}</h3>
+              </ContentRow>
+            </div>
           </div>
-        </div>
+        </>
       ) : (
         {}
       )}
