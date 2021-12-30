@@ -2,7 +2,6 @@ import {
   collection,
   doc,
   documentId,
-  getDoc,
   getDocs,
   getFirestore,
   query,
@@ -11,7 +10,6 @@ import {
 import { useEffect, useState } from "react";
 
 import ContentRow from "../../components/contentRow";
-// import ContentRow from "../components/contentRow";
 import amplitude from "amplitude-js";
 import firebaseApp from "../../firebase";
 import { useRouter } from "next/router";
@@ -68,6 +66,13 @@ export default function TagPage() {
     fetchTagContent();
   }, [tagId]);
 
+  useEffect(() => {
+    amplitude.getInstance().logEvent("Viewed Page: Tag Details", {
+      "Tag ID": tagId,
+      "Tag Name": tagName,
+    });
+  }, [tagName]);
+
   return (
     <div>
       {tagDescriptionData ? (
@@ -82,9 +87,7 @@ export default function TagPage() {
                 </ContentRow>
               </div>
             ) : (
-              <div>
-                No content found for the tag: {tagDescriptionData[0].data.name}
-              </div>
+              <div>No content found for the tag: {tagName}</div>
             )}
           </div>
         </>
