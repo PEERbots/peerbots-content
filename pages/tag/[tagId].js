@@ -67,10 +67,14 @@ export default function TagPage() {
   }, [tagId]);
 
   useEffect(() => {
-    amplitude.getInstance().logEvent("Viewed Page: Tag Details", {
-      "Tag ID": tagId,
-      "Tag Name": tagName,
-    });
+    {
+      tagName
+        ? amplitude.getInstance().logEvent("Viewed Page: Tag Details", {
+            "Tag ID": tagId,
+            "Tag Name": tagName,
+          })
+        : {};
+    }
   }, [tagName]);
 
   return (
