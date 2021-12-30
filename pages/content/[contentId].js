@@ -598,7 +598,11 @@ export default function ContentPage() {
               >
                 <div className="flex justify-between mb-2">
                   <div>
-                    <ReactStars count={5} value={review.data.rating} />
+                    <ReactStars
+                      count={5}
+                      value={review.data.rating}
+                      editable={false}
+                    />
                   </div>
 
                   <div className="align-middle">
