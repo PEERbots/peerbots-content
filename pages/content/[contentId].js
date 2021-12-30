@@ -42,12 +42,47 @@ export default function ContentPage() {
   const updateNameInput = useRef();
   const updateDescriptionInput = useRef();
 
+  const [hasReview, setHasReview] = useState(false);
+  const [userReview, setUserReview] = useState({});
+  const [newUserReviewRating, setNewUserReviewRating] = useState(0);
+  const reviewDescriptionInput = useRef();
+
   const copyAsInput = useRef();
 
   const db = getFirestore(firebaseApp);
 
   const router = useRouter();
   const { contentId } = router.query;
+
+  const updateReview = async (e) => {
+    e.preventDefault();
+    if (contentPurchased && Object.keys(userInDb).length > 0) {
+      console.log("User and purchased content");
+      if (hasReview) {
+        const updatedReviewData = await updateDoc(
+          doc(db, "reviews", userReview.id),
+          {
+            rating: newUserReviewRating,
+            description: reviewDescriptionInput.current.value,
+          }
+        );
+      } else {
+        const newReview = {
+          content: doc(db, "content", contentId),
+          user: doc(db, "users", userInDb.id),
+          rating: newUserReviewRating,
+          description: reviewDescriptionInput.current.value,
+        };
+        console.log(newReview);
+        const addedReviewData = await addDoc(
+          collection(db, "reviews"),
+          newReview
+        );
+      }
+      fetchUserReview();
+      fetchReviews();
+    }
+  };
 
   const updateName = async (e) => {
     e.preventDefault();
@@ -199,6 +234,29 @@ export default function ContentPage() {
       setReviews([]);
     }
   };
+
+  const fetchUserReview = async () => {
+    if (userInDb && contentPurchased) {
+      const userReviewQuery = query(
+        collection(db, "reviews"),
+        where("content", "==", doc(db, "content", contentId)),
+        where("user", "==", doc(db, "users", userInDb.id))
+      );
+      const reviewsData = await getDocs(userReviewQuery);
+      if (reviewsData.docs.length > 0) {
+        setUserReview({
+          id: reviewsData.docs[0].id,
+          data: reviewsData.docs[0].data(),
+        });
+        setHasReview(true);
+        setNewUserReviewRating(reviewsData.docs[0].data().rating);
+      } else {
+        setHasReview(false);
+        setUserReview({});
+      }
+    }
+  };
+
   const fetchSalesCount = async () => {
     const contentRef = doc(db, "content", contentId);
     const salesQuery = query(
@@ -259,6 +317,7 @@ export default function ContentPage() {
       const contentOwned = checkContentOwned(contentInfo);
       if (contentOwned) {
         fetchCopies();
+        fetchUserReview();
       }
     }
   }, [contentInfo, user, userInDb]);
@@ -470,6 +529,60 @@ export default function ContentPage() {
               List this publicly for free!
             </button>
           </div>
+        </div>
+      )}
+      {user && contentPurchased && (
+        <div className="bg-white shadow-lg rounded p-4 m-4">
+          {hasReview ? (
+            <span>Update your review</span>
+          ) : (
+            <span>Write a review</span>
+          )}
+          <form onSubmit={updateReview}>
+            <div>
+              Rating
+              {hasReview ? (
+                <ReactStars
+                  count={5}
+                  value={userReview.data.rating}
+                  editable={true}
+                  onChange={(newVal) => {
+                    setNewUserReviewRating(newVal);
+                  }}
+                />
+              ) : (
+                <ReactStars
+                  count={5}
+                  editable={true}
+                  onChange={(newVal) => {
+                    setNewUserReviewRating(newVal);
+                  }}
+                />
+              )}
+            </div>
+            <div>
+              <label>Review:</label>
+              {hasReview ? (
+                <input
+                  type="input"
+                  className="input-base"
+                  ref={reviewDescriptionInput}
+                  placeholder="Review Details"
+                  defaultValue={userReview.data.description}
+                />
+              ) : (
+                <input
+                  type="input"
+                  className="input-base"
+                  ref={reviewDescriptionInput}
+                  placeholder="Review Details"
+                />
+              )}
+              <button className="btn-primary" type="submit">
+                Submit Review
+              </button>
+            </div>
+          </form>
         </div>
       )}
 
