@@ -530,7 +530,7 @@ export default function ContentPage() {
         </div>
       )}
       {user && contentPurchased && (
-        <div className="bg-white shadow-lg rounded p-4 m-4">
+        <div className="bg-white shadow-lg rounded p-4 my-4 mx-2">
           {hasReview ? (
             <span>Update your review</span>
           ) : (
