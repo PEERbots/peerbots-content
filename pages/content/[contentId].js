@@ -18,6 +18,8 @@ import { useState, useEffect, useRef } from "react";
 import amplitude from "amplitude-js";
 import Link from "next/link";
 import ContentRow from "../../components/contentRow";
+import { Rating } from "@mui/material";
+import SummaryRating from "../../components/summaryRating";
 
 import { useFirebaseAuth } from "../../auth";
 
@@ -41,12 +43,45 @@ export default function ContentPage() {
   const updateNameInput = useRef();
   const updateDescriptionInput = useRef();
 
+  const [hasReview, setHasReview] = useState(false);
+  const [userReview, setUserReview] = useState({});
+  const [newUserReviewRating, setNewUserReviewRating] = useState(0);
+  const reviewDescriptionInput = useRef();
+
   const copyAsInput = useRef();
 
   const db = getFirestore(firebaseApp);
 
   const router = useRouter();
   const { contentId } = router.query;
+
+  const updateReview = async (e) => {
+    e.preventDefault();
+    if (contentPurchased && Object.keys(userInDb).length > 0) {
+      if (hasReview) {
+        const updatedReviewData = await updateDoc(
+          doc(db, "reviews", userReview.id),
+          {
+            rating: newUserReviewRating,
+            description: reviewDescriptionInput.current.value,
+          }
+        );
+      } else {
+        const newReview = {
+          content: doc(db, "content", contentId),
+          user: doc(db, "users", userInDb.id),
+          rating: newUserReviewRating,
+          description: reviewDescriptionInput.current.value,
+        };
+        const addedReviewData = await addDoc(
+          collection(db, "reviews"),
+          newReview
+        );
+      }
+      fetchUserReview();
+      fetchReviews();
+    }
+  };
 
   const updateName = async (e) => {
     e.preventDefault();
@@ -198,6 +233,28 @@ export default function ContentPage() {
       setReviews([]);
     }
   };
+
+  const fetchUserReview = async () => {
+    if (userInDb && Object.keys(userInDb).length > 0 && contentPurchased) {
+      const userReviewQuery = query(
+        collection(db, "reviews"),
+        where("content", "==", doc(db, "content", contentId)),
+        where("user", "==", doc(db, "users", userInDb.id))
+      );
+      const reviewsData = await getDocs(userReviewQuery);
+      if (reviewsData.docs.length > 0) {
+        setUserReview({
+          id: reviewsData.docs[0].id,
+          data: reviewsData.docs[0].data(),
+        });
+        setHasReview(true);
+      } else {
+        setHasReview(false);
+        setUserReview({});
+      }
+    }
+  };
+
   const fetchSalesCount = async () => {
     const contentRef = doc(db, "content", contentId);
     const salesQuery = query(
@@ -260,7 +317,12 @@ export default function ContentPage() {
         fetchCopies();
       }
     }
+    fetchUserReview();
   }, [contentInfo, user, userInDb]);
+
+  useEffect(() => {
+    fetchUserReview();
+  }, [userInDb, contentPurchased]);
 
   useEffect(() => {
     amplitude.getInstance().logEvent("Viewed Page: Content Details", {
@@ -346,37 +408,8 @@ export default function ContentPage() {
           )}
         </div>
         <div className="my-2">
-          {!contentInfo.copyOf && contentInfo.public && reviews ? (
-            <>
-              {reviews.length > 0 ? (
-                <span>
-                  <span className="text-accent-hc font-bold px-2 text-base">
-                    {reviews.reduce((sum, { data }) => {
-                      return sum + data.rating;
-                    }, 0) / reviews.length}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 inline-block"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                      />
-                    </svg>
-                  </span>
-                  <span className="text-sm">({reviews.length} reviews)</span>
-                </span>
-              ) : (
-                <span className="text-xs">No reviews yet</span>
-              )}
-            </>
-          ) : (
-            <span>{""}</span>
+          {!contentInfo.copyOf && contentInfo.public && reviews && (
+            <SummaryRating reviews={reviews} />
           )}
         </div>
         <div className="my-2">
@@ -471,6 +504,49 @@ export default function ContentPage() {
           </div>
         </div>
       )}
+      {user && contentPurchased && (
+        <div className="bg-white shadow-lg rounded p-4 my-4 mx-2">
+          {hasReview ? (
+            <span>Update your review</span>
+          ) : (
+            <span>Write a review</span>
+          )}
+          <form onSubmit={updateReview}>
+            <div>
+              New Rating:
+              <Rating
+                max={5}
+                onChange={(e, value) => {
+                  setNewUserReviewRating(value);
+                }}
+                className="p-4"
+              />
+            </div>
+            <div>
+              <label>Review:</label>
+              {hasReview ? (
+                <input
+                  type="input"
+                  className="input-base"
+                  ref={reviewDescriptionInput}
+                  placeholder="Review Details"
+                  defaultValue={userReview.data.description}
+                />
+              ) : (
+                <input
+                  type="input"
+                  className="input-base"
+                  ref={reviewDescriptionInput}
+                  placeholder="Review Details"
+                />
+              )}
+              <button className="btn-primary" type="submit">
+                Submit Review
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Reviews Section */}
       {contentInfo.public && !contentInfo.copyOf && reviews.length > 0 && (
@@ -484,15 +560,12 @@ export default function ContentPage() {
               >
                 <div className="flex justify-between mb-2">
                   <div>
-                    {review.data.rating}{" "}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 inline-block"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
+                    <Rating
+                      value={review.data.rating}
+                      max={5}
+                      readOnly
+                      size="small"
+                    />
                   </div>
 
                   <div className="align-middle">
@@ -528,31 +601,8 @@ export default function ContentPage() {
       {contentInfo.public && !contentInfo.copyOf && (
         <div className="bg-white shadow-md my-4 mx-2 rounded p-4 ">
           <div>
-            {reviews && reviews.length > 0 ? (
-              <span>
-                <span className="text-accent-hc font-bold px-2 text-base">
-                  {reviews.reduce((sum, { data }) => {
-                    return sum + data.rating;
-                  }, 0) / reviews.length}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 inline-block"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                    />
-                  </svg>
-                </span>
-                <span className="text-sm">({reviews.length} reviews)</span>
-              </span>
-            ) : (
-              <span className="text-xs">No reviews yet</span>
+            {!contentInfo.copyOf && contentInfo.public && reviews && (
+              <SummaryRating reviews={reviews} />
             )}
           </div>
           <div>
