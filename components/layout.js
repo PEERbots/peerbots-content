@@ -6,11 +6,11 @@ export default function Layout({ children }) {
   return (
     <>
       <FirebaseAuthProvider>
-        <div className="bg-white shadow-md my-4 mx-2 rounded w-full">
+        <div className="bg-white shadow-md my-4 mx-2 rounded">
           <Navbar />
         </div>
         {children}
-        <div className="bg-white shadow-md my-4 mx-2 rounded w-full">
+        <div className="bg-white shadow-md my-4 mx-2 rounded">
           <Footer />
         </div>
       </FirebaseAuthProvider>

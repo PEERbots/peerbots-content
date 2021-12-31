@@ -21,7 +21,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div>
-        <div className="lg:hidden bg-white shadow-md my-4 mx-2 p-8 rounded w-full">
+        <div className="lg:hidden bg-white shadow-md my-4 mx-2 p-8 rounded">
           <SearchForm />
         </div>
         <div>

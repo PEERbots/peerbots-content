@@ -1,15 +1,16 @@
-import firebaseApp from "../firebase";
 import {
-  getFirestore,
   collection,
+  doc,
+  documentId,
+  getDocs,
+  getFirestore,
   query,
   where,
-  doc,
-  getDocs,
-  documentId,
 } from "firebase/firestore";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+
 import ContentCard from "./contentCard";
+import firebaseApp from "../firebase";
 
 export default function ContentRow({ content, children }) {
   const [authors, setAuthors] = useState([]);
@@ -108,9 +109,9 @@ export default function ContentRow({ content, children }) {
   }, [content]);
   return (
     <>
-      <div className="bg-white shadow-md my-4 mx-2 p-8 rounded w-full">
+      <div className="bg-white shadow-md my-4 mx-2 p-8 rounded block">
         <div className="mb-6">{children}</div>
-        <div className="max-w-sm w-full lg:max-w-full lg:flex space-x-8">
+        <div className="w-full grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
           {content &&
             authors &&
             content.map((eachContent) => (
