@@ -187,7 +187,9 @@ export default function ContentCard({ content, author, rating, tags }) {
               )}
             </div>
             <div>
-              <button className="btn-primary">+</button>
+              <Link href="/content/[contentId]" as={`/content/${content.id}`}>
+                <button className="btn-primary">+</button>
+              </Link>
             </div>
           </div>
         </div>
