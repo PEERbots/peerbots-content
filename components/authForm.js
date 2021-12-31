@@ -5,6 +5,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   GoogleAuthProvider,
+  AuthErrorCodes,
 } from "firebase/auth";
 import {
   getFirestore,
@@ -20,14 +21,42 @@ import {
 import { useState, useRef } from "react";
 import { useFirebaseAuth } from "../auth";
 import amplitude from "amplitude-js";
+import { useRouter } from "next/router";
 
 export default function AuthForm() {
   const user = useFirebaseAuth();
   const auth = getAuth(firebaseApp);
   const [signingUp, setSigningUp] = useState(false);
+  const [authError, setAuthError] = useState("");
   const emailInput = useRef(null);
   const pwInput = useRef(null);
   const db = getFirestore(firebaseApp);
+  const router = useRouter();
+
+  function determineAppropriateErrorMessage(error) {
+    switch (error.code) {
+      case "auth/invalid-email":
+        setAuthError(
+          "You entered an invalid email. Please check it and try again."
+        );
+        break;
+      case "auth/email-already-in-use":
+        setAuthError(
+          "This email is already taken. Try to remember your password or try a different email."
+        );
+        break;
+      case "auth/invalid-password":
+        setAuthError("The password you entered is invalid. Please try again.");
+        break;
+      case "auth/wrong-password":
+        setAuthError(
+          "The password you entered is incorrect. Please try again or select 'Forgot password?'."
+        );
+        break;
+      default:
+        setAuthError(error.message);
+    }
+  }
 
   const checkUser = async (user) => {
     const q = query(
@@ -60,6 +89,13 @@ export default function AuthForm() {
     return data;
   };
 
+  const addEmailPWUser = async (user_info) => {
+    const data = await addDoc(collection(db, "users"), {
+      email: user_info.user.email,
+    });
+    return data;
+  };
+
   function signInWithUserInfo() {
     if (signingUp) {
       createUserWithEmailAndPassword(
@@ -73,10 +109,15 @@ export default function AuthForm() {
           amplitude.getInstance().logEvent("Signed Up", {
             "Authentication Provider": "Email & Password",
           });
+          return addEmailPWUser(user);
+        })
+        .then((data) => {
+          router.push(`/${data.id}`);
         })
         .catch((error) => {
           console.log("An error happenend with signing up");
           console.log(error);
+          determineAppropriateErrorMessage(error);
         });
     } else {
       signInWithEmailAndPassword(
@@ -94,6 +135,7 @@ export default function AuthForm() {
         .catch((error) => {
           console.log("An error happenend with signing in");
           console.log(error);
+          determineAppropriateErrorMessage(error);
         });
     }
   }
@@ -127,6 +169,7 @@ export default function AuthForm() {
       })
       .catch((error) => {
         console.log(error);
+        determineAppropriateErrorMessage(error);
         // Handle Errors here.
         const errorCode = error.code;
         const errorMessage = error.message;
@@ -144,11 +187,12 @@ export default function AuthForm() {
       </h3>
 
       <div className="m-10">
-        <p className="text-sm text-center">
+        <p className="text-sm text-center mb-2">
           {signingUp
             ? "Create an account to acquire and share Peerbots content."
             : "Sign in to acquire and share Peerbots content."}
         </p>
+        <p className="text-red-600 text-sm text-center">{authError}</p>
         <div className="m-5">
           <label
             className="relative text-gray-400 focus-within:text-gray-600 block"
