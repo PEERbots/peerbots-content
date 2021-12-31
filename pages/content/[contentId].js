@@ -18,7 +18,7 @@ import { useState, useEffect, useRef } from "react";
 import amplitude from "amplitude-js";
 import Link from "next/link";
 import ContentRow from "../../components/contentRow";
-import ReactStars from "react-rating-stars-component";
+import { Rating } from "@mui/material";
 
 import { useFirebaseAuth } from "../../auth";
 
@@ -247,7 +247,6 @@ export default function ContentPage() {
           data: reviewsData.docs[0].data(),
         });
         setHasReview(true);
-        setNewUserReviewRating(reviewsData.docs[0].data().rating);
       } else {
         setHasReview(false);
         setUserReview({});
@@ -542,25 +541,14 @@ export default function ContentPage() {
           )}
           <form onSubmit={updateReview}>
             <div>
-              Rating
-              {hasReview ? (
-                <ReactStars
-                  count={5}
-                  value={userReview.data.rating}
-                  edit={true}
-                  onChange={(newVal) => {
-                    setNewUserReviewRating(newVal);
-                  }}
-                />
-              ) : (
-                <ReactStars
-                  count={5}
-                  edit={true}
-                  onChange={(newVal) => {
-                    setNewUserReviewRating(newVal);
-                  }}
-                />
-              )}
+              New Rating:
+              <Rating
+                max={5}
+                onChange={(e, value) => {
+                  setNewUserReviewRating(value);
+                }}
+                className="p-4"
+              />
             </div>
             <div>
               <label>Review:</label>
@@ -600,10 +588,11 @@ export default function ContentPage() {
               >
                 <div className="flex justify-between mb-2">
                   <div>
-                    <ReactStars
-                      count={5}
+                    <Rating
                       value={review.data.rating}
-                      edit={false}
+                      max={5}
+                      readOnly
+                      size="small"
                     />
                   </div>
 
