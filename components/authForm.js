@@ -52,7 +52,7 @@ export default function AuthForm() {
         break;
       case "auth/wrong-password":
         setAuthError(
-          "The password you entered is incorrect. Please try again or select 'Forgot password?'."
+          "The email and password combination you entered is not correct. Please try again or try resetting your password."
         );
         break;
       case "auth/user-not-found":
