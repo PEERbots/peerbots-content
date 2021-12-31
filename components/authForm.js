@@ -199,7 +199,8 @@ export default function AuthForm() {
         {formMode == 2 && <span>Reset Password</span>}
       </h3>
 
-      <div className="m-10">
+
+      <div className="md:m-10 sm:m-4">
         <p className="text-sm text-center mb-2">
           {formMode == 0 && (
             <span>
