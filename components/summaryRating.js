@@ -4,9 +4,13 @@ export default function SummaryRating({ reviews }) {
       {reviews && reviews.length > 0 ? (
         <span>
           <span className="text-accent-hc font-bold px-2 text-base">
-            {reviews.reduce((sum, { data }) => {
-              return sum + data.rating;
-            }, 0) / reviews.length}
+            {
+              +parseFloat(
+                reviews.reduce((sum, { data }) => {
+                  return sum + data.rating;
+                }, 0) / reviews.length
+              ).toFixed(2)
+            }
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-4 w-4 inline-block"
