@@ -110,8 +110,6 @@ export default function AuthForm() {
       pwInput.current.value
     )
       .then((user) => {
-        console.log("New user created");
-        console.log(user);
         amplitude.getInstance().logEvent("Signed Up", {
           "Authentication Provider": "Email & Password",
         });
@@ -121,8 +119,6 @@ export default function AuthForm() {
         router.push(`/${data.id}`);
       })
       .catch((error) => {
-        console.log("An error happenend with signing up");
-        console.log(error);
         determineAppropriateErrorMessage(error);
       });
   }
@@ -134,15 +130,11 @@ export default function AuthForm() {
       pwInput.current.value
     )
       .then((user) => {
-        console.log("User signed in");
-        console.log(user);
         amplitude.getInstance().logEvent("Signed In", {
           "Authentication Provider": "Email & Password",
         });
       })
       .catch((error) => {
-        console.log("An error happenend with signing in");
-        console.log(error);
         determineAppropriateErrorMessage(error);
       });
   }
@@ -188,7 +180,6 @@ export default function AuthForm() {
         }
       })
       .catch((error) => {
-        console.log(error);
         determineAppropriateErrorMessage(error);
         // Handle Errors here.
         const errorCode = error.code;
