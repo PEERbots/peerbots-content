@@ -321,6 +321,10 @@ export default function ContentPage() {
   }, [contentInfo, user, userInDb]);
 
   useEffect(() => {
+    fetchUserReview();
+  }, [userInDb, contentPurchased]);
+
+  useEffect(() => {
     amplitude.getInstance().logEvent("Viewed Page: Content Details", {
       "Content ID": contentId,
     });
