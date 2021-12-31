@@ -143,7 +143,7 @@ export default function AuthForm() {
         {signingUp ? <span>Create Account</span> : <span>Log In</span>}
       </h3>
 
-      <div className="m-10">
+      <div className="md:m-10 sm:m-4">
         <p className="text-sm text-center">
           {signingUp
             ? "Create an account to acquire and share Peerbots content."
