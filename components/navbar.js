@@ -103,7 +103,7 @@ export default function Navbar() {
         >
           <div className="block text-center items-end justify-center min-h-screen pt-20 px-4 sm:pt-4 md:m-10 sm:m-2">
             <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
-            <AuthForm />
+            <AuthForm mode={signingUp} />
           </div>
         </Dialog>
       </div>

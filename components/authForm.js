@@ -18,16 +18,15 @@ import {
   limit,
   getDocs,
 } from "firebase/firestore";
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useFirebaseAuth } from "../auth";
 import amplitude from "amplitude-js";
 import { useRouter } from "next/router";
 
-export default function AuthForm() {
+export default function AuthForm({ mode }) {
   const user = useFirebaseAuth();
   const auth = getAuth(firebaseApp);
-  // 0 is signing up, 1 is signing in and 2 is forgot password
-  const [formMode, setFormMode] = useState(0);
+  const [formMode, setFormMode] = useState("signing up");
   const [authError, setAuthError] = useState("");
   const [resetPwMessage, setResetPwMessage] = useState("");
   const emailInput = useRef(null);
@@ -191,27 +190,33 @@ export default function AuthForm() {
         // ...
       });
   }
+
+  useEffect(() => {
+    if (typeof mode !== "undefined") {
+      setFormMode(mode ? "signing up" : "signing in");
+    }
+  }, [mode]);
+
   return (
     <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full p-10">
       <h3 className="text-primary bold text-xl text-center">
-        {formMode == 0 && <span>Sign up</span>}
-        {formMode == 1 && <span>Sign In</span>}
-        {formMode == 2 && <span>Reset Password</span>}
+        {formMode == "signing up" && <span>Sign up</span>}
+        {formMode == "signing in" && <span>Sign In</span>}
+        {formMode == "resetting password" && <span>Reset Password</span>}
       </h3>
-
 
       <div className="md:m-10 sm:m-4">
         <p className="text-sm text-center mb-2">
-          {formMode == 0 && (
+          {formMode == "signing up" && (
             <span>
               Sign up for an account to acquire and share Peerbots content.
             </span>
           )}
-          {formMode == 1 && (
+          {formMode == "signing in" && (
             <span>Sign in to acquire and share Peerbots content.</span>
           )}
         </p>
-        {formMode == 2 && (
+        {formMode == "resetting password" && (
           <p className="text-dark-primary text-base text-center font-bold">
             {resetPwMessage}
           </p>
@@ -245,7 +250,7 @@ export default function AuthForm() {
             ></input>
           </label>
         </div>
-        {formMode != 2 && (
+        {formMode != "resetting password" && (
           <div className="m-5">
             <label
               className="relative text-gray-400 focus-within:text-gray-600 block"
@@ -277,40 +282,40 @@ export default function AuthForm() {
         )}
 
         <div className="text-center m-5">
-          {formMode == 0 && (
+          {formMode == "signing up" && (
             <button className="btn-primary" onClick={signUpWithUserInfo}>
               Sign Up
             </button>
           )}
-          {formMode == 1 && (
+          {formMode == "signing in" && (
             <button className="btn-primary" onClick={signInWithUserInfo}>
               Sign In
             </button>
           )}
-          {formMode == 2 && (
+          {formMode == "resetting password" && (
             <button className="btn-primary" onClick={resetPassword}>
               Reset Password
             </button>
           )}
           <div className="text-center text-sm mt-3 mb-10 text-gray-500">
-            {formMode == 0 && (
+            {formMode == "signing up" && (
               <p>
                 Already have an account?{" "}
                 <a
                   className="underline decoration-gray-600 hover:text-black cursor-pointer mx-1"
-                  onClick={() => setFormMode(1)}
+                  onClick={() => setFormMode("signing in")}
                 >
                   Sign in
                 </a>
               </p>
             )}
-            {formMode == 1 && (
+            {formMode == "signing in" && (
               <>
                 <p>
                   Forgot your password?{" "}
                   <a
                     className="underline decoration-gray-600 hover:text-black cursor-pointer mx-1"
-                    onClick={() => setFormMode(2)}
+                    onClick={() => setFormMode("resetting password")}
                   >
                     Reset password.
                   </a>
@@ -320,20 +325,20 @@ export default function AuthForm() {
                   Don&apos;t have an account?{" "}
                   <a
                     className="underline decoration-gray-600 hover:text-black cursor-pointer mx-1"
-                    onClick={() => setFormMode(0)}
+                    onClick={() => setFormMode("signing up")}
                   >
                     Sign up
                   </a>
                 </p>
               </>
             )}
-            {formMode == 2 && (
+            {formMode == "resetting password" && (
               <>
                 <p>
                   Don&apos;t have an account?{" "}
                   <a
                     className="underline decoration-gray-600 hover:text-black cursor-pointer mx-1"
-                    onClick={() => setFormMode(0)}
+                    onClick={() => setFormMode("signing up")}
                   >
                     Sign up
                   </a>
@@ -343,7 +348,7 @@ export default function AuthForm() {
                   Remembered your password?
                   <a
                     className="underline decoration-gray-600 hover:text-black cursor-pointer mx-1"
-                    onClick={() => setFormMode(1)}
+                    onClick={() => setFormMode("signing in")}
                   >
                     Sign In
                   </a>
@@ -353,10 +358,10 @@ export default function AuthForm() {
           </div>
         </div>
 
-        {formMode != 2 && (
+        {formMode != "resetting password" && (
           <div className="text-center text-sm text-gray-500">
-            {formMode == 0 && <span>Sign up with</span>}
-            {formMode == 1 && <span>Sign in with</span>}
+            {formMode == "signing up" && <span>Sign up with</span>}
+            {formMode == "signing in" && <span>Sign in with</span>}
             <svg
               className="text-center block m-auto cursor-pointer"
               viewBox="0 0 24 24"
