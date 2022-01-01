@@ -35,6 +35,8 @@ export default function ContentPage() {
   const [salesCount, setSalesCount] = useState(null);
   const [tags, setTags] = useState([]);
 
+  const [original, setOriginal] = useState({});
+
   const [contentAuthored, setContentAuthored] = useState(false);
   const [contentPurchased, setContentPurchased] = useState(false);
   const [copies, setCopies] = useState([]);
@@ -192,6 +194,13 @@ export default function ContentPage() {
     setCopies(copiesInDb);
   };
 
+  const fetchOriginal = async () => {
+    if (contentInfo.copyOf) {
+      const originalInDb = await getDoc(contentInfo.copyOf);
+      setOriginal(originalInDb.data());
+    }
+  };
+
   const fetchAuthor = async (contentInfoFromDb) => {
     const authorRef = doc(db, "users", contentInfoFromDb.owner.id);
     const author = await getDoc(authorRef);
@@ -314,6 +323,7 @@ export default function ContentPage() {
       fetchReviews();
       fetchSalesCount();
       fetchCopiesCount();
+      fetchOriginal();
     }
   }, [contentInfo]);
 
@@ -461,6 +471,56 @@ export default function ContentPage() {
           {/* Description Section */}
           <div className="row-end-auto bg-white shadow-md my-4 mx-2 rounded p-8">
             <div>
+              {user && contentAuthored && (
+                <div className="mb-4">
+                  <h3 className="inline-block text-xl">Description</h3>
+                  <button
+                    className="border border-gray-400 mx-2 p-2 hover:bg-gray-400 hover:text-white rounded"
+                    onClick={() => {
+                      setEditingDescription(true);
+                    }}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6 inline-block"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                    </svg>{" "}
+                    Edit
+                  </button>
+                </div>
+              )}
+              {editingDescription && (
+                <div>
+                  <form onSubmit={updateDescription}>
+                    <label>New Description</label>
+                    <textarea
+                      type="text"
+                      ref={updateDescriptionInput}
+                      className="input-base form-input"
+                      name="updatedDescription"
+                      defaultValue={contentInfo.description}
+                    ></textarea>
+                    <button
+                      className="btn-primary"
+                      type="submit"
+                      onClick={updateDescription}
+                    >
+                      {" "}
+                      Update Description
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingDescription(false);
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </form>
+                </div>
+              )}
               <p
                 className={`${
                   isDescriptionExpanded ? "line-clamp-none" : "line-clamp-5"
@@ -480,54 +540,7 @@ export default function ContentPage() {
                   </a>
                 </p>
               )}
-              {user && contentAuthored && (
-                <button
-                  className="border border-gray-400 mx-2 p-2 hover:bg-gray-400 hover:text-white rounded"
-                  onClick={() => {
-                    setEditingDescription(true);
-                  }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6 inline-block"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                  </svg>{" "}
-                  Edit
-                </button>
-              )}
             </div>
-            {editingDescription && (
-              <div>
-                <form onSubmit={updateDescription}>
-                  <label>New Description</label>
-                  <textarea
-                    type="text"
-                    ref={updateDescriptionInput}
-                    className="input-base form-input"
-                    name="updatedDescription"
-                    defaultValue={contentInfo.description}
-                  ></textarea>
-                  <button
-                    className="btn-primary"
-                    type="submit"
-                    onClick={updateDescription}
-                  >
-                    {" "}
-                    Update Description
-                  </button>
-                  <button
-                    onClick={() => {
-                      setEditingDescription(false);
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </form>
-              </div>
-            )}
           </div>
         </div>
 
@@ -537,19 +550,16 @@ export default function ContentPage() {
             contentAuthored &&
             !contentInfo.copyOf &&
             !contentInfo.public && (
-              <div className="bg-white shadow-md my-4 mx-2 rounded p-8">
-                <div className="text-base">
-                  Would you like to list this content publicly?
-                </div>
-                <div className="text-sm">
+              <div className="bg-white shadow-md my-4 mx-2 rounded p-8 text-center">
+                <div className="text-sm mb-2">
                   Listing content will make it publicly available to others for
                   free! Listing content publicly will allow others to copy it
                   and use it on the Peerbots app.{" "}
                 </div>
-                <div className="text-sm font-bold">
+                <div className="text-sm font-bold mb-2">
                   Once content is public it can not be made private.
                 </div>
-                <div>
+                <div className="mt-2">
                   <button className="btn-primary" onClick={listPublicly}>
                     List this publicly for free!
                   </button>
@@ -559,12 +569,17 @@ export default function ContentPage() {
 
           {/* Acquisition or Statistics Section */}
           {contentInfo.public && !contentInfo.copyOf && (
-            <div className="bg-white shadow-md my-4 mx-2 rounded p-8">
+            <div className="bg-white shadow-md my-4 mx-2 rounded p-8 text-center">
               <div className="text-center">
+                <div className="text-sm mb-2">
+                  This content is available for
+                </div>
                 {contentInfo.price == 0 ? (
-                  <span className="uppercase">Free</span>
+                  <span className="uppercase text-2xl text-green-700 font-bold">
+                    Free
+                  </span>
                 ) : (
-                  <span>
+                  <span className="text-2xl text-accent-two font-bold">
                     {new Intl.NumberFormat("en-US", {
                       style: "currency",
                       currency: "USD",
@@ -572,58 +587,13 @@ export default function ContentPage() {
                   </span>
                 )}
               </div>
-              <div className="text-center my-2">
-                {salesCount && (
-                  <span className="mr-2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 inline-block mr-1"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                      />
-                    </svg>
-                    {salesCount} sales{" "}
-                  </span>
-                )}
 
-                {copiesCount && (
-                  <span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 inline-block mr-1"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
-                      />
-                    </svg>
-                    {copiesCount} copies
-                  </span>
-                )}
-              </div>
-              <div>
-                {!contentInfo.copyOf && contentInfo.public && reviews && (
-                  <SummaryRating reviews={reviews} />
-                )}
-              </div>
               {user ? (
                 <>
                   {!(contentAuthored || contentPurchased) && (
                     <div>
                       <button
-                        className="btn-primary"
+                        className="btn-primary mt-4"
                         onClick={() => {
                           amplitude
                             .getInstance()
@@ -636,53 +606,100 @@ export default function ContentPage() {
                           acquireContent();
                         }}
                       >
-                        + Acquire Content
+                        + Acquire
                       </button>{" "}
                     </div>
                   )}
                 </>
               ) : (
-                <div>
+                <div className="mt-2">
                   <span className="text-sm">
                     You must sign in to acquire content.
                   </span>
                   <button className="btn-primary" disabled>
-                    + Acquire Content
+                    + Acquire
                   </button>
                 </div>
               )}
+
+              {/* Sales, Copies and Rating */}
+              <div className="text-center my-2 mt-8">
+                <span className="mr-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 inline-block mr-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                    />
+                  </svg>
+                  {salesCount} sales{" "}
+                </span>
+                <span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 inline-block mr-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
+                    />
+                  </svg>
+                  {copiesCount} copies
+                </span>
+              </div>
+              <div className="text-center">
+                {!contentInfo.copyOf && contentInfo.public && reviews && (
+                  <SummaryRating reviews={reviews} />
+                )}
+              </div>
             </div>
           )}
 
           {/* Link to original section */}
           {contentInfo.copyOf && (
             <div className="bg-white shadow-md my-4 mx-2 rounded p-8">
-              <span>
-                This is a copy of{" "}
-                <Link
-                  href="/content/[contentId]"
-                  as={`/content/${contentInfo.copyOf.id}`}
-                >
-                  original content link
-                </Link>
-              </span>
+              <div className="text-center">
+                This is a copy of
+                <div>
+                  <Link
+                    href="/content/[contentId]"
+                    as={`/content/${contentInfo.copyOf.id}`}
+                  >
+                    <a class="underline decoration-primary text-primary hover:text-dark-primary hover:decoration-dark-primary font-bold">
+                      {original.name}
+                    </a>
+                  </Link>
+                </div>
+              </div>
             </div>
           )}
 
           {/* Copy this content section */}
           {user && (contentAuthored || contentPurchased) && (
-            <div className="bg-white shadow-md my-4 mx-2 rounded p-8">
+            <div className="bg-white shadow-md my-4 mx-2 rounded p-8 text-center">
               <form onSubmit={copyContent}>
-                <label>Copy As</label>
+                <label className="block mb-2">Copy As</label>
                 <input
                   type="text"
                   ref={copyAsInput}
-                  className="input-base form-input"
+                  className="input-base form-input w-full text-gray-700"
                   name="copyAs"
                   defaultValue={`Copy of ${contentInfo.name}`}
                 ></input>
                 <button
-                  className="btn-primary"
+                  className="btn-primary mt-4"
                   type="submit"
                   onClick={copyContent}
                 >
@@ -693,6 +710,7 @@ export default function ContentPage() {
           )}
         </div>
       </div>
+
       {/* Reviews Section */}
       {contentInfo.public && !contentInfo.copyOf && reviews.length > 0 && (
         <div className="bg-white shadow-md my-4 mx-2 rounded p-8">
@@ -740,7 +758,7 @@ export default function ContentPage() {
                 </form>
               </div>
             )}
-            <h3 className="text-sm font-bold mb-4">Reviews</h3>
+            <h3 className="text-xl">Reviews</h3>
             <div className="grid  grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-4 lg:gap-6">
               {reviews.map((review) => (
                 <div
@@ -791,7 +809,7 @@ export default function ContentPage() {
         {copies.length > 0 ? (
           <div>
             <ContentRow content={copies}>
-              <h3 className="text-sm font-bold mb-4">Your copies</h3>
+              <h3 className="text-xl">Your copies</h3>
             </ContentRow>
           </div>
         ) : (

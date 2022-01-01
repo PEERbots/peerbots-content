@@ -13,7 +13,7 @@ export default function SearchForm() {
   };
 
   return (
-    <div className="mr-3">
+    <div>
       <form className="rounded" onSubmit={submitSearchQuery}>
         <div className="flex items-center">
           <input
@@ -21,7 +21,7 @@ export default function SearchForm() {
             ref={searchQueryRef}
             name="search"
             className="input-base border-2"
-            placeholder="Search..."
+            placeholder="Search for content"
           ></input>
           <button
             className="bg-primary input-base border-2 border-l items-center"

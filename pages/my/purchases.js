@@ -1,18 +1,19 @@
-import { useState, useEffect } from "react";
-import CheckAuth from "../../components/checkAuth";
-import ContentRow from "../../components/contentRow";
-import { useFirebaseAuth } from "../../auth";
-import firebaseApp from "../../firebase";
 import {
-  getFirestore,
   collection,
   doc,
+  documentId,
+  getDocs,
+  getFirestore,
   query,
   where,
-  getDocs,
-  documentId,
 } from "firebase/firestore";
+import { useEffect, useState } from "react";
+
+import CheckAuth from "../../components/checkAuth";
+import ContentRow from "../../components/contentRow";
 import amplitude from "amplitude-js";
+import firebaseApp from "../../firebase";
+import { useFirebaseAuth } from "../../auth";
 
 export default function MyPurchasesPage() {
   const { userInDb } = useFirebaseAuth();
@@ -61,7 +62,7 @@ export default function MyPurchasesPage() {
       <CheckAuth>
         <div>
           <ContentRow content={purchasedContent}>
-            <h3>Purchased Content</h3>
+            <h3 className="text-xl">Purchased Content</h3>
           </ContentRow>
         </div>
       </CheckAuth>

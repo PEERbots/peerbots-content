@@ -21,7 +21,7 @@ export default function SummaryRating({ reviews }) {
           <div className="text-xs text-center">({reviews.length} reviews)</div>
         </span>
       ) : (
-        <span className="text-xs">No reviews yet</span>
+        <span className="text-xs text-center">No reviews yet</span>
       )}
     </>
   );

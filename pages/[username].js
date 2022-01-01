@@ -1,19 +1,20 @@
-import { useRouter } from "next/router";
-import firebaseApp from "../firebase";
 import {
-  getFirestore,
   collection,
-  query,
-  where,
   doc,
-  getDocs,
   getDoc,
+  getDocs,
+  getFirestore,
+  query,
   updateDoc,
+  where,
 } from "firebase/firestore";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+
 import ContentRow from "../components/contentRow";
 import amplitude from "amplitude-js";
+import firebaseApp from "../firebase";
 import { useFirebaseAuth } from "../auth";
+import { useRouter } from "next/router";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -167,7 +168,7 @@ export default function ProfilePage() {
                   >
                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                   </svg>{" "}
-                  Edit
+                  Edit name
                 </button>
               )}
             </div>
@@ -217,7 +218,7 @@ export default function ProfilePage() {
                   >
                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                   </svg>{" "}
-                  Edit Description
+                  Edit description
                 </button>
               )}
             </div>
@@ -311,7 +312,7 @@ export default function ProfilePage() {
           <div>
             <div>
               <ContentRow content={content}>
-                <h3>Content Authored by {userInfo.name}</h3>
+                <h3 className="text-xl">Content authored by {userInfo.name}</h3>
               </ContentRow>
             </div>
           </div>

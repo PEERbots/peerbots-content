@@ -21,8 +21,8 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div>
-        <div className="lg:hidden bg-white shadow-md my-4 mx-2 p-8 rounded">
-          <SearchForm />
+        <div className="lg:hidden bg-white shadow-md my-4 mx-2 p-8 rounded flex justify-center content-center">
+          <SearchForm className="flex-shrink" />
         </div>
         <div>
           <TrustedContentRow />

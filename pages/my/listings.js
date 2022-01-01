@@ -1,17 +1,18 @@
-import { useState, useEffect } from "react";
-import CheckAuth from "../../components/checkAuth";
-import ContentRow from "../../components/contentRow";
-import { useFirebaseAuth } from "../../auth";
-import firebaseApp from "../../firebase";
 import {
-  getFirestore,
   collection,
   doc,
+  getDocs,
+  getFirestore,
   query,
   where,
-  getDocs,
 } from "firebase/firestore";
+import { useEffect, useState } from "react";
+
+import CheckAuth from "../../components/checkAuth";
+import ContentRow from "../../components/contentRow";
 import amplitude from "amplitude-js";
+import firebaseApp from "../../firebase";
+import { useFirebaseAuth } from "../../auth";
 
 export default function MyListingsPage() {
   const { userInDb } = useFirebaseAuth();
@@ -51,7 +52,7 @@ export default function MyListingsPage() {
       <CheckAuth>
         <div>
           <ContentRow content={content}>
-            <h3>Your Listed Content</h3>
+            <h3 className="text-xl">Your Listed Content</h3>
           </ContentRow>
         </div>
       </CheckAuth>

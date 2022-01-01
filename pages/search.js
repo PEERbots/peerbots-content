@@ -1,18 +1,19 @@
-import ContentRow from "../components/contentRow";
-import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
-import algoliaApp from "../algolia";
-import firebaseApp from "../firebase";
 import {
-  getFirestore,
   collection,
-  query,
-  where,
-  limit,
   documentId,
   getDocs,
+  getFirestore,
+  limit,
+  query,
+  where,
 } from "firebase/firestore";
+import { useEffect, useState } from "react";
+
+import ContentRow from "../components/contentRow";
+import algoliaApp from "../algolia";
 import amplitude from "amplitude-js";
+import firebaseApp from "../firebase";
+import { useRouter } from "next/router";
 
 export default function SearchResults() {
   const router = useRouter();
@@ -31,7 +32,7 @@ export default function SearchResults() {
       const q = query(
         collection(db, "content"),
         where("public", "==", true),
-        where(documentId(), "in", contentIds),
+        where(documentId(), "in", contentIds.slice(0, 10)),
         limit(10)
       );
       const data = await getDocs(q);
@@ -53,6 +54,10 @@ export default function SearchResults() {
   }, [q]);
 
   return (
-    <ContentRow content={searchResults}>Search Results for {q}:</ContentRow>
+    <ContentRow content={searchResults}>
+      <h3 className="text-xl">
+        Search results for &quot;<span className="font-bold">{q}</span>&quot;
+      </h3>
+    </ContentRow>
   );
 }
