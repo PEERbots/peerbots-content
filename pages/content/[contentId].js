@@ -677,7 +677,7 @@ export default function ContentPage() {
                     href="/content/[contentId]"
                     as={`/content/${contentInfo.copyOf.id}`}
                   >
-                    <a class="underline decoration-primary text-primary hover:text-dark-primary hover:decoration-dark-primary font-bold">
+                    <a className="underline decoration-primary text-primary hover:text-dark-primary hover:decoration-dark-primary font-bold">
                       {original.name}
                     </a>
                   </Link>
