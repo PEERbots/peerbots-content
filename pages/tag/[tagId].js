@@ -18,9 +18,7 @@ export default function TagPage() {
   const router = useRouter();
   const { tagId } = router.query;
   const [content, setContent] = useState([]);
-  const [tagDescriptionData, setTagDescriptionData] = useState([]);
-  const [tagName, setTagName] = useState("");
-  const [tagDescription, setTagDescription] = useState("");
+  const [tagInfo, setTagInfo] = useState({});
   const db = getFirestore(firebaseApp);
 
   const fetchTagContent = async () => {
@@ -49,15 +47,15 @@ export default function TagPage() {
         where(documentId(), "==", tagId)
       );
       const tagData = await getDocs(tagDataQuery);
-      const tagDataFromDb = tagData.docs.map((doc) => {
-        return {
-          id: doc.id,
-          data: doc.data(),
+      if (tagData.docs.length > 0) {
+        const tagDataFromDb = {
+          id: tagData.docs[0].id,
+          data: tagData.docs[0].data(),
         };
-      });
-      setTagDescriptionData(tagDataFromDb);
-      setTagName(tagDataFromDb[0].data.name);
-      setTagDescription(tagDataFromDb[0].data.description);
+        setTagInfo(tagDataFromDb);
+      } else {
+        router.push("/404", "/not-found");
+      }
     }
   };
 
@@ -67,31 +65,40 @@ export default function TagPage() {
   }, [tagId]);
 
   useEffect(() => {
-    {
-      tagName
-        ? amplitude.getInstance().logEvent("Viewed Page: Tag Details", {
-            "Tag ID": tagId,
-            "Tag Name": tagName,
-          })
-        : {};
+    if (tagInfo && Object.keys(tagInfo).length > 0) {
+      amplitude.getInstance().logEvent("Viewed Page: Tag Details", {
+        "Tag ID": tagId,
+        "Tag Name": tagInfo.data.name,
+      });
     }
-  }, [tagName]);
+  }, [tagInfo.data]);
 
   return (
     <div>
-      {tagDescriptionData ? (
+      {tagInfo.data ? (
         <>
-          <div className="bg-white flex">Tag: {tagName}</div>
-          <div className="bg-white flex">Description: {tagDescription}</div>
+          <div className="bg-white shadow-md my-4 mx-2 p-8">
+            <h1 className="text-2xl mb-4">
+              Tag:{" "}
+              <span
+                className="rounded-3xl px-2 mx-1"
+                style={{
+                  background: tagInfo.data.color,
+                  color: tagInfo.data.textColor,
+                }}
+              >
+                {tagInfo.data.name}
+              </span>
+            </h1>
+            <p>{tagInfo.data.description}</p>
+          </div>
           <div>
             {content ? (
               <div>
-                <ContentRow content={content}>
-                  <h3>Content with the tag: {tagName}</h3>
-                </ContentRow>
+                <ContentRow content={content} />
               </div>
             ) : (
-              <div>No content found for the tag: {tagName}</div>
+              <div>No content found for the tag: {tagInfo.data.name}</div>
             )}
           </div>
         </>
