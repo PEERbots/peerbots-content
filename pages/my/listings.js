@@ -49,7 +49,6 @@ export default function MyListingsPage() {
   return (
     <div>
       <CheckAuth>
-        <div> Listings</div>
         <div>
           <ContentRow content={content}>
             <h3>Your Listed Content</h3>

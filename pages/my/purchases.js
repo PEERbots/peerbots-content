@@ -59,7 +59,6 @@ export default function MyPurchasesPage() {
   return (
     <div>
       <CheckAuth>
-        <div> Your Purchases</div>
         <div>
           <ContentRow content={purchasedContent}>
             <h3>Purchased Content</h3>

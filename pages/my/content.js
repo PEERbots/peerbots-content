@@ -48,7 +48,6 @@ export default function MyContentPage() {
   return (
     <div>
       <CheckAuth>
-        <div> Your Content page</div>
         <div>
           <ContentRow
             content={content.filter((contentItem) => {
