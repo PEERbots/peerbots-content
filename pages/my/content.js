@@ -1,17 +1,18 @@
-import { useState, useEffect } from "react";
-import CheckAuth from "../../components/checkAuth";
-import ContentRow from "../../components/contentRow";
-import { useFirebaseAuth } from "../../auth";
-import firebaseApp from "../../firebase";
 import {
-  getFirestore,
   collection,
   doc,
+  getDocs,
+  getFirestore,
   query,
   where,
-  getDocs,
 } from "firebase/firestore";
+import { useEffect, useState } from "react";
+
+import CheckAuth from "../../components/checkAuth";
+import ContentRow from "../../components/contentRow";
 import amplitude from "amplitude-js";
+import firebaseApp from "../../firebase";
+import { useFirebaseAuth } from "../../auth";
 
 export default function MyContentPage() {
   const { userInDb } = useFirebaseAuth();
@@ -48,21 +49,20 @@ export default function MyContentPage() {
   return (
     <div>
       <CheckAuth>
-        <div> Your Content page</div>
         <div>
           <ContentRow
             content={content.filter((contentItem) => {
               return contentItem.data.copyOf;
             })}
           >
-            <h3>Your Copied Content</h3>
+            <h3 className="text-xl">Your Copied Content</h3>
           </ContentRow>
           <ContentRow
             content={content.filter((contentItem) => {
               return !contentItem.data.copyOf;
             })}
           >
-            <h3>Your Authored Content</h3>
+            <h3 className="text-xl">Your Authored Content</h3>
           </ContentRow>
         </div>
       </CheckAuth>

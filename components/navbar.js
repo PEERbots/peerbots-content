@@ -19,10 +19,12 @@ import SearchForm from "./searchForm";
 import amplitude from "amplitude-js";
 import firebaseApp from "../firebase";
 import { useFirebaseAuth } from "../auth";
+import { useRouter } from "next/router";
 
 export default function Navbar() {
   const { user, userInDb } = useFirebaseAuth();
   const auth = getAuth(firebaseApp);
+  const router = useRouter();
   const [modalShown, setModalShown] = useState(false);
   const [signingUp, setSigningUp] = useState(false);
   const [hasListedContent, setHasListedContent] = useState(false);
@@ -49,6 +51,7 @@ export default function Navbar() {
       .then(() => {
         // Sign-out successful.
         amplitude.getInstance().logEvent("Signed Out");
+        router.push("/");
       })
       .catch((error) => {
         // An error happened.
@@ -87,7 +90,7 @@ export default function Navbar() {
     } else {
       setNavigation([]);
     }
-  }, [userInDb, hasListedContent]);
+  }, [user, userInDb, hasListedContent]);
 
   function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
@@ -271,7 +274,7 @@ export default function Navbar() {
                                 <a
                                   className={classNames(
                                     active ? "" : "",
-                                    "block px-4 py-2 text-sm text-gray-700"
+                                    "block px-4 py-2 text-sm text-gray-700 hover:font-bold"
                                   )}
                                 >
                                   My Profile
@@ -286,7 +289,7 @@ export default function Navbar() {
                                   onClick={signOutOfFirebase}
                                   className={classNames(
                                     active ? "bg-gray-100" : "",
-                                    "block px-4 py-2 text-sm text-gray-700"
+                                    "block px-4 py-2 text-sm text-gray-700 hover:font-bold"
                                   )}
                                 >
                                   Sign out
@@ -299,7 +302,7 @@ export default function Navbar() {
                     </Menu>
                   </div>
                 ) : (
-                  <div className="">
+                  <div className="ml-8">
                     <span>
                       <a
                         onClick={() => {

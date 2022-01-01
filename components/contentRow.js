@@ -1,19 +1,20 @@
-import firebaseApp from "../firebase";
 import {
-  getFirestore,
   collection,
+  doc,
+  documentId,
+  getDocs,
+  getFirestore,
   query,
   where,
-  doc,
-  getDocs,
-  documentId,
 } from "firebase/firestore";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+
 import ContentCard from "./contentCard";
+import firebaseApp from "../firebase";
 
 export default function ContentRow({ content, children }) {
   const [authors, setAuthors] = useState([]);
-  const [ratings, setRatings] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [tags, setTags] = useState([]);
   content.forEach((content) => {
     content.data.id = content.id;
@@ -48,8 +49,6 @@ export default function ContentRow({ content, children }) {
         })
         .flat();
 
-      console.log("All tags", tagsIds);
-
       if (tagsIds.length > 0) {
         const tagsQuery = query(
           collection(db, "tags"),
@@ -79,28 +78,11 @@ export default function ContentRow({ content, children }) {
         const docData = doc.data();
         return {
           content: docData.content.id,
-          rating: docData.rating,
+          data: docData,
         };
       });
 
-      const ratingsFromDb = contentReferences.map((contentId) => {
-        const reviewsForContent = reviewsFromDb.filter((review) => {
-          return review.content == contentId.id;
-        });
-        const nReviews = reviewsForContent.length;
-        return {
-          contentId: contentId.id,
-          averageRating:
-            nReviews > 0
-              ? reviewsForContent.reduce((sum, { rating }) => {
-                  return sum + rating;
-                }, 0)
-              : null,
-          nReviews: nReviews,
-        };
-      });
-
-      setRatings(ratingsFromDb);
+      setReviews(reviewsFromDb);
     }
   };
   useEffect(() => {
@@ -108,9 +90,9 @@ export default function ContentRow({ content, children }) {
   }, [content]);
   return (
     <>
-      <div className="bg-white shadow-md my-4 mx-2 p-8 rounded w-full">
-        <div className="mb-6">{children}</div>
-        <div className="max-w-sm w-full lg:max-w-full lg:flex space-x-8">
+      <div className="bg-white shadow-md my-4 mx-2 p-8 rounded block">
+        {children && <div className="mb-6">{children}</div>}
+        <div className="w-full grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
           {content &&
             authors &&
             content.map((eachContent) => (
@@ -122,11 +104,9 @@ export default function ContentRow({ content, children }) {
                     return author.id == eachContent.data.owner.id;
                   })[0]
                 }
-                rating={
-                  ratings.filter((rating) => {
-                    return rating.contentId == eachContent.id;
-                  })[0]
-                }
+                reviews={reviews.filter((review) => {
+                  return review.content == eachContent.id;
+                })}
                 tags={tags.filter((tag) => {
                   return eachContent.data.tags
                     .map((t) => {
