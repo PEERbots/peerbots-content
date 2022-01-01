@@ -112,30 +112,46 @@ export default function ContentCard({ content, author, reviews, tags }) {
               </Link>
             ))}
         </div>
-        <div className="flex items-center justify-between my-4 w-full">
-          <div className="text-gray-900 text-sm leading-none">
-            {content.price == 0 ? (
-              <span className="uppercase">Free</span>
-            ) : (
-              <span>
-                {new Intl.NumberFormat("en-US", {
-                  style: "currency",
-                  currency: "USD",
-                }).format(content.price)}
-              </span>
-            )}
-          </div>
-          <div className="">
-            <SummaryRating reviews={reviews} />
-          </div>
-          <div className="">
-            <Link href="/content/[contentId]" as={`/content/${content.id}`}>
-              <button className="btn-primary flex items-center m-0">
-                <span className="text-xl">+</span>
-              </button>
+        {content.copyOf ? (
+          <div className="text-center my-4 text-xs">
+            This is a copy.{" "}
+            <Link
+              href="/content/[contentId]"
+              as={`/content/${content.copyOf.id}`}
+            >
+              <a className="underline decoration-primary text-primary hover:text-dark-primary hover:decoration-dark-primary font-bold">
+                View original.
+              </a>
             </Link>
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center justify-between my-4 w-full">
+            <div className="text-gray-900 text-sm leading-none">
+              {content.price == 0 ? (
+                <span className="uppercase text-green-700 font-bold ">
+                  Free
+                </span>
+              ) : (
+                <span>
+                  {new Intl.NumberFormat("en-US", {
+                    style: "currency",
+                    currency: "USD",
+                  }).format(content.price)}
+                </span>
+              )}
+            </div>
+            <div className="">
+              <SummaryRating reviews={reviews} />
+            </div>
+            <div className="">
+              <Link href="/content/[contentId]" as={`/content/${content.id}`}>
+                <button className="btn-primary flex items-center m-0">
+                  <span className="text-xl">+</span>
+                </button>
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
