@@ -12,7 +12,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import ContentRow from "../../components/contentRow";
 import Link from "next/link";
@@ -50,11 +50,25 @@ export default function ContentPage() {
   const reviewDescriptionInput = useRef();
 
   const copyAsInput = useRef();
+  const descriptionParagraph = useRef();
+  const [isDescriptionLong, setIsDescriptionLong] = useState(true);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   const db = getFirestore(firebaseApp);
 
   const router = useRouter();
   const { contentId } = router.query;
+
+  function calculateIsDescriptionLong() {
+    // https://stackoverflow.com/questions/52169520/how-can-i-check-whether-line-clamp-is-enabled
+    if (descriptionParagraph.current) {
+      const sh = descriptionParagraph.current.scrollHeight;
+      const ch = descriptionParagraph.current.clientHeight;
+      if (sh > 0 && ch > 0) {
+        setIsDescriptionLong(sh > ch);
+      }
+    }
+  }
 
   const updateReview = async (e) => {
     e.preventDefault();
@@ -331,12 +345,19 @@ export default function ContentPage() {
     });
   }, []);
 
+  useLayoutEffect(() => {
+    calculateIsDescriptionLong();
+    window.addEventListener("resize", calculateIsDescriptionLong);
+    return () =>
+      window.removeEventListener("resize", calculateIsDescriptionLong);
+  }, [descriptionParagraph.current]);
+
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-        <div className="w-full col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4 grid grid-rows-3">
+        <div className="w-full col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4">
           {/* Summary section */}
-          <div className="bg-white shadow-md my-4 mx-2 rounded p-8 row-span-1">
+          <div className="bg-white shadow-md my-4 mx-2 rounded p-8">
             <div className="flex items-center">
               <span className="text-2xl flex items-center">
                 {contentInfo.name} <TrustedStar content={contentInfo} />
@@ -438,9 +459,27 @@ export default function ContentPage() {
           </div>
 
           {/* Description Section */}
-          <div className="row-end-auto bg-white shadow-md my-4 mx-2 rounded p-8 row-span-2">
+          <div className="row-end-auto bg-white shadow-md my-4 mx-2 rounded p-8">
             <div>
-              {contentInfo.description}
+              <p
+                className={`${
+                  isDescriptionExpanded ? "line-clamp-none" : "line-clamp-5"
+                } `}
+                ref={descriptionParagraph}
+              >
+                {contentInfo.description}
+              </p>
+              {isDescriptionLong && !isDescriptionExpanded && (
+                <p className="font-bold text-dark-primary cursor-pointer">
+                  <a
+                    onClick={() => {
+                      setIsDescriptionExpanded(true);
+                    }}
+                  >
+                    Read more...
+                  </a>
+                </p>
+              )}
               {user && contentAuthored && (
                 <button
                   className="border border-gray-400 mx-2 p-2 hover:bg-gray-400 hover:text-white rounded"
