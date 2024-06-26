@@ -126,6 +126,27 @@ export default function ContentPage() {
     }
   };
 
+  // Copied from peerbots-controller-web. Needs refactor to cloud fundtions that both repos call for Firebase-related editing
+  const updateTemplatesInfoForContent = async (contentID) => {
+    const contentTemplates = await getDocs(
+      collection(db, "content", contentID, "templates")
+    );
+    const templatesInfo = contentTemplates.docs.map((eachTemplate) => {
+      let eachTemplatesData = eachTemplate.data();
+      return {
+        id: eachTemplate.id,
+        title: eachTemplatesData.title,
+        ...(eachTemplatesData.description && {
+          description: eachTemplatesData.description,
+        }),
+      };
+    });
+    const updatedContent = await updateDoc(doc(db, "content", contentID), {
+      templatesInfo: templatesInfo,
+    });
+    return updatedContent;
+  };
+
   const copyContent = async (e) => {
     e.preventDefault();
     const contentName = copyAsInput.current.value;
@@ -138,9 +159,23 @@ export default function ContentPage() {
     newContent.trusted = false;
     newContent.owner = doc(db, "users", userInDb.id);
 
-    const data = await addDoc(collection(db, "content"), newContent);
+    const newContentData = await addDoc(collection(db, "content"), newContent);
 
-    router.push(`/content/${data.id}`);
+    if (contentInfo.templatesInfo && contentInfo.templatesInfo.length > 0) {
+      const allTemplates = await getDocs(
+        collection(db, "content", contentId, "templates")
+      );
+      allTemplates.forEach((templateDoc) => {
+        addDoc(
+          collection(db, "content", newContentData.id, "templates"),
+          templateDoc.data()
+        );
+      });
+    }
+
+    await updateTemplatesInfoForContent(newContentData.id);
+
+    router.push(`/content/${newContentData.id}`);
   };
 
   const checkContentOwned = async (content) => {
@@ -209,21 +244,25 @@ export default function ContentPage() {
   };
 
   const fetchTags = async (contentInfoFromDb) => {
-    const tagsIds = contentInfoFromDb.tags.map((tag) => {
-      return tag.id;
-    });
-    const tagsQuery = query(
-      collection(db, "tags"),
-      where(documentId(), "in", tagsIds)
-    );
-    const tagsData = await getDocs(tagsQuery);
-    const tagsFromDb = tagsData.docs.map((doc) => {
-      return {
-        id: doc.id,
-        data: doc.data(),
-      };
-    });
-    setTags(tagsFromDb);
+    if (contentInfoFromDb.tags) {
+      const tagsIds = contentInfoFromDb.tags.map((tag) => {
+        return tag.id;
+      });
+      const tagsQuery = query(
+        collection(db, "tags"),
+        where(documentId(), "in", tagsIds)
+      );
+      const tagsData = await getDocs(tagsQuery);
+      const tagsFromDb = tagsData.docs.map((doc) => {
+        return {
+          id: doc.id,
+          data: doc.data(),
+        };
+      });
+      setTags(tagsFromDb);
+    } else {
+      setTags([]);
+    }
   };
 
   const fetchReviews = async () => {
@@ -467,6 +506,25 @@ export default function ContentPage() {
               </div>
             </div>
           </div>
+
+          {/* Templates Section */}
+          {contentInfo &&
+            contentInfo.templatesInfo &&
+            contentInfo.templatesInfo.length > 0 && (
+              <div className="row-end-auto bg-white shadow-md my-4 mx-2 rounded p-8">
+                <h3 className="block text-xl mb-4">Included Templates</h3>
+                {contentInfo.templatesInfo.map((template) => {
+                  return (
+                    <div
+                      className="border border-gray-400 mx-2 p-2 rounded inline-block"
+                      key={template.id}
+                    >
+                      {template.title}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
           {/* Description Section */}
           <div className="row-end-auto bg-white shadow-md my-4 mx-2 rounded p-8">
