@@ -507,6 +507,7 @@ export default function ContentPage() {
             </div>
           </div>
 
+          {/* Templates Section */}
           {contentInfo &&
             contentInfo.templatesInfo &&
             contentInfo.templatesInfo.length > 0 && (
@@ -514,7 +515,10 @@ export default function ContentPage() {
                 <h3 className="block text-xl mb-4">Included Templates</h3>
                 {contentInfo.templatesInfo.map((template) => {
                   return (
-                    <div className="border border-gray-400 mx-2 p-2 rounded inline-block">
+                    <div
+                      className="border border-gray-400 mx-2 p-2 rounded inline-block"
+                      key={template.id}
+                    >
                       {template.title}
                     </div>
                   );
