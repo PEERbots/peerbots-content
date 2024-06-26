@@ -42,7 +42,9 @@ export default function ContentRow({ content, children }) {
       setAuthors(authorsFromDb);
 
       const tagsIds = content
+        .filter((d) => d.data.tags)
         .map((doc) => {
+          console.log(doc);
           return doc.data.tags.flat().map((tag) => {
             return tag.id;
           });
@@ -107,13 +109,17 @@ export default function ContentRow({ content, children }) {
                 reviews={reviews.filter((review) => {
                   return review.content == eachContent.id;
                 })}
-                tags={tags.filter((tag) => {
-                  return eachContent.data.tags
-                    .map((t) => {
-                      return t.id;
-                    })
-                    .includes(tag.id);
-                })}
+                tags={
+                  eachContent.data.tags
+                    ? tags.filter((tag) => {
+                        return eachContent.data.tags
+                          .map((t) => {
+                            return t.id;
+                          })
+                          .includes(tag.id);
+                      })
+                    : []
+                }
               />
             ))}
         </div>
