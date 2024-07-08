@@ -7,31 +7,19 @@ import {
   GoogleAuthProvider,
   sendPasswordResetEmail,
 } from "firebase/auth";
-import {
-  getFirestore,
-  query,
-  collection,
-  doc,
-  updateDoc,
-  addDoc,
-  where,
-  limit,
-  getDocs,
-} from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
 import { useState, useEffect, useRef } from "react";
 import { useFirebaseAuth } from "../auth";
 import amplitude from "amplitude-js";
 import { useRouter } from "next/router";
 
 export default function AuthForm({ mode }) {
-  const user = useFirebaseAuth();
   const auth = getAuth(firebaseApp);
   const [formMode, setFormMode] = useState("signing up");
   const [authError, setAuthError] = useState("");
   const [resetPwMessage, setResetPwMessage] = useState("");
   const emailInput = useRef(null);
   const pwInput = useRef(null);
-  const db = getFirestore(firebaseApp);
   const router = useRouter();
 
   function determineAppropriateErrorMessage(error) {
@@ -64,44 +52,6 @@ export default function AuthForm({ mode }) {
     }
   }
 
-  const checkUser = async (user) => {
-    const q = query(
-      collection(db, "users"),
-      where("email", "==", user.email),
-      limit(1)
-    );
-    const data = await getDocs(q);
-
-    return { userFromFirebaseAuth: user, userFromDatabase: data.docs[0] };
-  };
-
-  const updateUser = async (user_db, user_info) => {
-    const userDoc = doc(db, "users", user_db.id);
-    const data = await updateDoc(userDoc, {
-      name: user_info.displayName,
-      photoUrl: user_info.photoURL,
-    });
-
-    return data;
-  };
-
-  const addUser = async (user_info) => {
-    const data = await addDoc(collection(db, "users"), {
-      name: user_info.displayName,
-      photoUrl: user_info.photoURL,
-      email: user_info.email,
-    });
-
-    return data;
-  };
-
-  const addEmailPWUser = async (user_info) => {
-    const data = await addDoc(collection(db, "users"), {
-      email: user_info.user.email,
-    });
-    return data;
-  };
-
   function signUpWithUserInfo() {
     createUserWithEmailAndPassword(
       auth,
@@ -112,7 +62,7 @@ export default function AuthForm({ mode }) {
         amplitude.getInstance().logEvent("Signed Up", {
           "Authentication Provider": "Email & Password",
         });
-        return addEmailPWUser(user);
+        return addEmailPWUser(user.user);
       })
       .then((data) => {
         router.push(`/${data.id}`);
@@ -161,22 +111,7 @@ export default function AuthForm({ mode }) {
         // The signed-in user info.
         const user = result.user;
         // Check if email is in DB
-        return checkUser(user);
-      })
-      .then(({ userFromFirebaseAuth, userFromDatabase }) => {
-        if (userFromDatabase) {
-          // If it is, update name and photo
-          amplitude
-            .getInstance()
-            .logEvent("Signed In", { "Authentication Provider": "Google" });
-          return updateUser(userFromDatabase, userFromFirebaseAuth);
-        } else {
-          // If it isn't, add user to db
-          amplitude
-            .getInstance()
-            .logEvent("Signed Up", { "Authentication Provider": "Google" });
-          return addUser(userFromFirebaseAuth);
-        }
+        return user;
       })
       .catch((error) => {
         determineAppropriateErrorMessage(error);

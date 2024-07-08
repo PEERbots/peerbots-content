@@ -3,11 +3,10 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import firebaseApp from "./firebase";
 import {
   getFirestore,
-  collection,
-  query,
-  where,
-  limit,
-  getDocs,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
 } from "firebase/firestore";
 import amplitude from "amplitude-js";
 
@@ -18,17 +17,34 @@ export const FirebaseAuthProvider = ({ children }) => {
   const [userInDb, setUserInDb] = useState(null);
   const db = getFirestore(firebaseApp);
 
-  const fetchUserInDb = async () => {
-    if (user) {
-      const userQuery = query(
-        collection(db, "users"),
-        where("email", "==", user.email),
-        limit(1)
-      );
-      const data = await getDocs(userQuery);
-      const userDataFromDb = { id: data.docs[0].id, data: data.docs[0].data() };
-      amplitude.getInstance().setUserId(data.docs[0].id);
-      setUserInDb(userDataFromDb);
+  const fetchUserInDbOrAddIfNotFound = async (userToFetch) => {
+    if (userToFetch) {
+      const docSnap = await getDoc(doc(db, "users", userToFetch.uid));
+      if (docSnap.exists()) {
+        amplitude.getInstance().setUserId(docSnap.id);
+        await updateDoc(doc(db, "users", userToFetch.uid), {
+          name: userToFetch.displayName,
+          photoUrl: userToFetch.photoURL,
+        });
+        setUserInDb({
+          id: docSnap.id,
+          data: docSnap.data(),
+        });
+      } else {
+        await setDoc(doc(db, "users", userToFetch.uid), {
+          name: userToFetch.displayName,
+          photoUrl: userToFetch.photoURL,
+          email: userToFetch.email,
+        });
+        setUserInDb({
+          id: userToFetch.uid,
+          data: {
+            name: userToFetch.displayName,
+            photoUrl: userToFetch.photoURL,
+            email: userToFetch.email,
+          },
+        });
+      }
     }
   };
   useEffect(() => {
@@ -42,7 +58,7 @@ export const FirebaseAuthProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    fetchUserInDb();
+    fetchUserInDbOrAddIfNotFound(user);
   }, [user]);
 
   return (
