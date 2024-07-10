@@ -1,18 +1,10 @@
 import { useState, useEffect } from "react";
-import firebaseApp from "../firebase";
-import {
-  getFirestore,
-  collection,
-  query,
-  where,
-  limit,
-  getDocs,
-} from "firebase/firestore";
+import { db } from "../firebase";
+import { collection, query, where, limit, getDocs } from "firebase/firestore";
 import ContentRow from "./contentRow";
 
 export default function LatestContentRow() {
   const [latestContent, setLatestContent] = useState([]);
-  const db = getFirestore(firebaseApp);
   const fetchLatestContent = async () => {
     const q = query(
       collection(db, "content"),

@@ -1,13 +1,7 @@
 import { useState, useEffect, createContext, useContext } from "react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import firebaseApp from "./firebase";
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-} from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "./firebase";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import amplitude from "amplitude-js";
 
 const FirebaseAuthContext = createContext();
@@ -15,7 +9,6 @@ const FirebaseAuthContext = createContext();
 export const FirebaseAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [userInDb, setUserInDb] = useState(null);
-  const db = getFirestore(firebaseApp);
 
   const fetchUserInDbOrAddIfNotFound = async (userToFetch) => {
     if (userToFetch) {
@@ -48,7 +41,6 @@ export const FirebaseAuthProvider = ({ children }) => {
     }
   };
   useEffect(() => {
-    const auth = getAuth(firebaseApp);
     const unlisten = onAuthStateChanged(auth, (user) => {
       user ? setUser(user) : setUser(null);
     });

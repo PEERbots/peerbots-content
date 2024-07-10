@@ -3,7 +3,6 @@ import {
   doc,
   getDoc,
   getDocs,
-  getFirestore,
   query,
   updateDoc,
   where,
@@ -12,7 +11,7 @@ import { useEffect, useRef, useState } from "react";
 
 import ContentRow from "../components/contentRow";
 import amplitude from "amplitude-js";
-import firebaseApp from "../firebase";
+import { db } from "../firebase";
 import { useFirebaseAuth } from "../auth";
 import { useRouter } from "next/router";
 
@@ -22,7 +21,6 @@ export default function ProfilePage() {
   const [userId, setUserId] = useState(null);
   const [userInfo, setUserInfo] = useState({});
   const [content, setContent] = useState([]);
-  const db = getFirestore(firebaseApp);
 
   const { user, userInDb } = useFirebaseAuth();
   const [viewerIsAuthor, setViewerIsAuthor] = useState(false);

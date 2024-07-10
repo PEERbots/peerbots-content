@@ -1,20 +1,16 @@
-import firebaseApp from "../firebase";
+import { auth } from "../firebase";
 import {
-  getAuth,
   signInWithPopup,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   sendPasswordResetEmail,
 } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
 import { useState, useEffect, useRef } from "react";
-import { useFirebaseAuth } from "../auth";
 import amplitude from "amplitude-js";
 import { useRouter } from "next/router";
 
 export default function AuthForm({ mode }) {
-  const auth = getAuth(firebaseApp);
   const [formMode, setFormMode] = useState("signing up");
   const [authError, setAuthError] = useState("");
   const [resetPwMessage, setResetPwMessage] = useState("");

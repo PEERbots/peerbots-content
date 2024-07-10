@@ -3,14 +3,13 @@ import {
   doc,
   documentId,
   getDocs,
-  getFirestore,
   query,
   where,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 import ContentCard from "./contentCard";
-import firebaseApp from "../firebase";
+import { db } from "../firebase";
 
 export default function ContentRow({ content, children }) {
   const [authors, setAuthors] = useState([]);
@@ -20,7 +19,6 @@ export default function ContentRow({ content, children }) {
     content.data.id = content.id;
   });
 
-  const db = getFirestore(firebaseApp);
   const fetchContentRowDetails = async () => {
     if (content && content.length > 0) {
       const authorsIds = content.map((doc) => {

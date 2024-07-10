@@ -6,7 +6,6 @@ import {
   documentId,
   getDoc,
   getDocs,
-  getFirestore,
   limit,
   query,
   updateDoc,
@@ -20,7 +19,7 @@ import { Rating } from "@mui/material";
 import SummaryRating from "../../components/summaryRating";
 import TrustedStar from "../../components/trustedStar";
 import amplitude from "amplitude-js";
-import firebaseApp from "../../firebase";
+import { db } from "../../firebase";
 import { useFirebaseAuth } from "../../auth";
 import { useRouter } from "next/router";
 
@@ -31,7 +30,7 @@ export default function ContentPage() {
   const [author, setAuthor] = useState({});
   const [reviews, setReviews] = useState([]);
   const [reviewers, setReviewers] = useState([]);
-  const [copiesCount, setCopiesCount] = useState(null);
+  // const [copiesCount, setCopiesCount] = useState(null);
   const [salesCount, setSalesCount] = useState(null);
   const [tags, setTags] = useState([]);
 
@@ -55,8 +54,6 @@ export default function ContentPage() {
   const descriptionParagraph = useRef();
   const [isDescriptionLong, setIsDescriptionLong] = useState(true);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-
-  const db = getFirestore(firebaseApp);
 
   const router = useRouter();
   const { contentId } = router.query;
@@ -216,8 +213,8 @@ export default function ContentPage() {
   const fetchCopies = async () => {
     const copiesQuery = query(
       collection(db, "content"),
-      where("copyOf", "==", doc(db, "content", contentId)),
-      where("owner", "==", doc(db, "users", userInDb.id))
+      where("owner", "==", doc(db, "users", userInDb.id)),
+      where("copyOf", "==", doc(db, "content", contentId))
     );
     const data = await getDocs(copiesQuery);
     const copiesInDb = data.docs.map((doc) => {
@@ -328,15 +325,16 @@ export default function ContentPage() {
     setSalesCount(salesData.docs.length);
   };
 
-  const fetchCopiesCount = async () => {
-    const contentRef = doc(db, "content", contentId);
-    const copiesQuery = query(
-      collection(db, "content"),
-      where("copyOf", "==", contentRef)
-    );
-    const copiesData = await getDocs(copiesQuery);
-    setCopiesCount(copiesData.docs.length);
-  };
+  // TODO: Figure out a way to structure data where it makes sense to give away this information
+  // const fetchCopiesCount = async () => {
+  //   const contentRef = doc(db, "content", contentId);
+  //   const copiesQuery = query(
+  //     collection(db, "content"),
+  //     where("copyOf", "==", contentRef)
+  //   );
+  //   const copiesData = await getDocs(copiesQuery);
+  //   setCopiesCount(copiesData.docs.length);
+  // };
 
   const fetchContentDetails = async () => {
     if (contentId) {
@@ -361,7 +359,7 @@ export default function ContentPage() {
       fetchTags(contentInfo);
       fetchReviews();
       fetchSalesCount();
-      fetchCopiesCount();
+      // fetchCopiesCount();
       fetchOriginal();
     }
   }, [contentInfo]);
@@ -699,7 +697,7 @@ export default function ContentPage() {
                   </svg>
                   {salesCount} sales{" "}
                 </span>
-                <span>
+                {/* <span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-4 w-4 inline-block mr-1"
@@ -715,7 +713,7 @@ export default function ContentPage() {
                     />
                   </svg>
                   {copiesCount} copies
-                </span>
+                </span> */}
               </div>
               <div className="text-center">
                 {!contentInfo.copyOf && contentInfo.public && reviews && (
