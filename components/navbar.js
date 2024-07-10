@@ -1,15 +1,8 @@
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Fragment, useEffect, useState } from "react";
 import { MenuIcon, XIcon } from "@heroicons/react/outline";
-import {
-  collection,
-  doc,
-  getDocs,
-  getFirestore,
-  query,
-  where,
-} from "firebase/firestore";
-import { getAuth, signOut } from "firebase/auth";
+import { collection, doc, getDocs, query, where } from "firebase/firestore";
+import { signOut } from "firebase/auth";
 
 import AuthForm from "./authForm";
 import { Dialog } from "@headlessui/react";
@@ -17,19 +10,17 @@ import Image from "next/image";
 import Link from "next/link";
 import SearchForm from "./searchForm";
 import amplitude from "amplitude-js";
-import firebaseApp from "../firebase";
+import { db, auth } from "../firebase";
 import { useFirebaseAuth } from "../auth";
 import { useRouter } from "next/router";
 
 export default function Navbar() {
   const { user, userInDb } = useFirebaseAuth();
-  const auth = getAuth(firebaseApp);
   const router = useRouter();
   const [modalShown, setModalShown] = useState(false);
   const [signingUp, setSigningUp] = useState(false);
   const [hasListedContent, setHasListedContent] = useState(false);
   const [navigation, setNavigation] = useState([]);
-  const db = getFirestore(firebaseApp);
 
   const checkListedContent = async () => {
     if (userInDb) {

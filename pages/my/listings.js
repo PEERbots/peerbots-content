@@ -1,23 +1,15 @@
-import {
-  collection,
-  doc,
-  getDocs,
-  getFirestore,
-  query,
-  where,
-} from "firebase/firestore";
+import { collection, doc, getDocs, query, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 import CheckAuth from "../../components/checkAuth";
 import ContentRow from "../../components/contentRow";
 import amplitude from "amplitude-js";
-import firebaseApp from "../../firebase";
+import { db } from "../../firebase";
 import { useFirebaseAuth } from "../../auth";
 
 export default function MyListingsPage() {
   const { userInDb } = useFirebaseAuth();
   const [content, setContent] = useState([]);
-  const db = getFirestore(firebaseApp);
 
   const fetchUserListings = async () => {
     if (userInDb && userInDb.id) {

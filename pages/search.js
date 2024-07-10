@@ -2,7 +2,6 @@ import {
   collection,
   documentId,
   getDocs,
-  getFirestore,
   limit,
   query,
   where,
@@ -12,7 +11,7 @@ import { useEffect, useState } from "react";
 import ContentRow from "../components/contentRow";
 import algoliaApp from "../algolia";
 import amplitude from "amplitude-js";
-import firebaseApp from "../firebase";
+import { db } from "../firebase";
 import { useRouter } from "next/router";
 
 export default function SearchResults() {
@@ -20,7 +19,6 @@ export default function SearchResults() {
   const [searchResults, setSearchResults] = useState([]);
   const { q } = router.query;
   const contentIndex = algoliaApp.initIndex("Content Index");
-  const db = getFirestore(firebaseApp);
 
   const fetchSearchResults = async () => {
     if (q) {

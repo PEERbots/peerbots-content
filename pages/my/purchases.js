@@ -3,7 +3,6 @@ import {
   doc,
   documentId,
   getDocs,
-  getFirestore,
   query,
   where,
 } from "firebase/firestore";
@@ -12,13 +11,12 @@ import { useEffect, useState } from "react";
 import CheckAuth from "../../components/checkAuth";
 import ContentRow from "../../components/contentRow";
 import amplitude from "amplitude-js";
-import firebaseApp from "../../firebase";
+import { db } from "../../firebase";
 import { useFirebaseAuth } from "../../auth";
 
 export default function MyPurchasesPage() {
   const { userInDb } = useFirebaseAuth();
   const [purchasedContent, setPurchasedContent] = useState([]);
-  const db = getFirestore(firebaseApp);
 
   const fetchPurchasedContent = async () => {
     if (userInDb && userInDb.id) {

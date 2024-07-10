@@ -3,7 +3,6 @@ import {
   doc,
   documentId,
   getDocs,
-  getFirestore,
   query,
   where,
 } from "firebase/firestore";
@@ -11,7 +10,7 @@ import { useEffect, useState } from "react";
 
 import ContentRow from "../../components/contentRow";
 import amplitude from "amplitude-js";
-import firebaseApp from "../../firebase";
+import { db } from "../../firebase";
 import { useRouter } from "next/router";
 
 export default function TagPage() {
@@ -19,7 +18,6 @@ export default function TagPage() {
   const { tagId } = router.query;
   const [content, setContent] = useState([]);
   const [tagInfo, setTagInfo] = useState({});
-  const db = getFirestore(firebaseApp);
 
   const fetchTagContent = async () => {
     if (tagId) {
