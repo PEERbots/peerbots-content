@@ -768,7 +768,7 @@ export default function ContentPage() {
       </div>
 
       {/* Reviews Section */}
-      {contentInfo.public && !contentInfo.copyOf && reviews.length > 0 && (
+      {contentInfo.public && !contentInfo.copyOf && (
         <div className="bg-white shadow-md my-4 mx-2 rounded p-8">
           <div className="mb-6">
             {user && contentPurchased && (
@@ -816,46 +816,50 @@ export default function ContentPage() {
             )}
             <h3 className="text-xl">Reviews</h3>
             <div className="grid  grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-4 lg:gap-6">
-              {reviews.map((review) => (
-                <div
-                  key={review.id}
-                  className="bg-white shadow-lg rounded p-4 w-64 mx-auto"
-                >
-                  <div className="flex justify-between mb-2">
-                    <div>
-                      <Rating
-                        value={review.data.rating}
-                        max={5}
-                        readOnly
-                        size="small"
-                      />
-                    </div>
+              {reviews.length == 0 && (
+                <div className="p-4 m-4">No reviews yet</div>
+              )}
+              {reviews.length > 0 &&
+                reviews.map((review) => (
+                  <div
+                    key={review.id}
+                    className="bg-white shadow-lg rounded p-4 w-64 mx-auto"
+                  >
+                    <div className="flex justify-between mb-2">
+                      <div>
+                        <Rating
+                          value={review.data.rating}
+                          max={5}
+                          readOnly
+                          size="small"
+                        />
+                      </div>
 
-                    <div className="align-middle">
-                      <span>
-                        <img
-                          src={
+                      <div className="align-middle">
+                        <span>
+                          <img
+                            src={
+                              reviewers.filter((reviewer) => {
+                                return reviewer.id == review.data.user.id;
+                              })[0].data.photoUrl
+                            }
+                            className="rounded-full h-6 w-6 inline-block mr-1"
+                          ></img>
+                        </span>
+                        <span className="text-sm">
+                          {
                             reviewers.filter((reviewer) => {
                               return reviewer.id == review.data.user.id;
-                            })[0].data.photoUrl
+                            })[0].data.name
                           }
-                          className="rounded-full h-6 w-6 inline-block mr-1"
-                        ></img>
-                      </span>
-                      <span className="text-sm">
-                        {
-                          reviewers.filter((reviewer) => {
-                            return reviewer.id == review.data.user.id;
-                          })[0].data.name
-                        }
-                      </span>
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-700">
+                      {review.data.description}
                     </div>
                   </div>
-                  <div className="text-sm text-gray-700">
-                    {review.data.description}
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         </div>
