@@ -11,13 +11,14 @@ import { useEffect, useState } from "react";
 import ContentRow from "../../components/contentRow";
 import { db } from "../../../firebase";
 import { useNavigate, useParams } from "react-router";
-import { firebaseDoc } from "../../types/firebase_helper_types";
+import { Content } from "../../types/content";
+import { Tag } from "../../types/tag";
 
 export default function TagPage() {
   const navigate = useNavigate();
   const { tagId } = useParams();
-  const [content, setContent] = useState<firebaseDoc[]>([]);
-  const [tagInfo, setTagInfo] = useState<firebaseDoc | null>(null);
+  const [content, setContent] = useState<Content[]>([]);
+  const [tagInfo, setTagInfo] = useState<Tag | null>(null);
 
   const fetchTagContent = async () => {
     if (tagId) {
@@ -33,7 +34,7 @@ export default function TagPage() {
           id: doc.id,
           data: doc.data(),
         };
-      });
+      }) as Content[];
       setContent(contentFromDb);
     }
   };
@@ -49,7 +50,7 @@ export default function TagPage() {
         const tagDataFromDb = {
           id: tagData.docs[0].id,
           data: tagData.docs[0].data(),
-        };
+        } as Tag;
         setTagInfo(tagDataFromDb);
       } else {
         navigate("/not-found");

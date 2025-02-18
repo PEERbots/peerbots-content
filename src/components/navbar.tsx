@@ -6,7 +6,7 @@ import { signOut } from "firebase/auth";
 import AuthForm from "./authForm";
 import { Dialog } from "@headlessui/react";
 import { Link, NavLink, useNavigate } from "react-router";
-import SearchForm from "./searchForm";
+import { SearchForm } from "./searchForm";
 import { db, auth } from "../../firebase";
 
 import peerbotsLogo from "../assets/peerbots_logo.png";
@@ -122,26 +122,22 @@ export default function Navbar() {
                   <div>
                     <div className="items-center block lg:hidden w-24">
                       <Link to="/">
-                        <a>
-                          <img
-                            src={peerbotsLogo}
-                            alt="Peerbots Logo"
-                            width={192}
-                            height={33}
-                          />
-                        </a>
+                        <img
+                          src={peerbotsLogo}
+                          alt="Peerbots Logo"
+                          width={192}
+                          height={33}
+                        />
                       </Link>
                     </div>
                     <div className="hidden lg:block w-48">
                       <Link to="/">
-                        <a>
-                          <img
-                            src={peerbotsLogo}
-                            alt="Peerbots Logo"
-                            width={192}
-                            height={33}
-                          />
-                        </a>
+                        <img
+                          src={peerbotsLogo}
+                          alt="Peerbots Logo"
+                          width={192}
+                          height={33}
+                        />
                       </Link>
                     </div>
                   </div>
@@ -152,26 +148,22 @@ export default function Navbar() {
                       <div>
                         <div className="block lg:hidden w-24">
                           <Link to="/">
-                            <a>
-                              <img
-                                src={peerbotsLogo}
-                                alt="Peerbots Logo"
-                                width={192}
-                                height={33}
-                              />
-                            </a>
+                            <img
+                              src={peerbotsLogo}
+                              alt="Peerbots Logo"
+                              width={192}
+                              height={33}
+                            />
                           </Link>
                         </div>
                         <div className="hidden lg:block w-48">
                           <Link to="/">
-                            <a>
-                              <img
-                                src={peerbotsLogo}
-                                alt="Peerbots Logo"
-                                width={192}
-                                height={33}
-                              />
-                            </a>
+                            <img
+                              src={peerbotsLogo}
+                              alt="Peerbots Logo"
+                              width={192}
+                              height={33}
+                            />
                           </Link>
                         </div>
                       </div>
