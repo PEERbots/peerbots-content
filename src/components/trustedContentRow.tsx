@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { db } from "../../firebase";
 import { collection, query, where, limit, getDocs } from "firebase/firestore";
 import ContentRow from "./contentRow";
+import { Content } from "../types/content";
 
 export default function TrustedContentRow() {
-  const [trustedContent, setTrustedContent] = useState([]);
+  const [trustedContent, setTrustedContent] = useState<Content[]>([]);
   const fetchTrustedContent = async () => {
     const q = query(
       collection(db, "content"),
@@ -18,7 +19,7 @@ export default function TrustedContentRow() {
         id: doc.id,
         data: doc.data(),
       };
-    });
+    }) as Content[];
 
     setTrustedContent(trustedContentFromDb);
   };
@@ -28,10 +29,11 @@ export default function TrustedContentRow() {
   }, []);
   return (
     <>
-      <ContentRow content={trustedContent}>
-        <h3 className="text-xl font-bold">Trusted Content</h3>
-        <p className="text-sm">Content trusted by the Peerbots team.</p>
-      </ContentRow>
+      <ContentRow
+        content={trustedContent}
+        title={"Trusted Content"}
+        description={"Content trusted by the Peerbots team."}
+      />
     </>
   );
 }

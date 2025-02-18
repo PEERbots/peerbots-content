@@ -10,7 +10,6 @@ import { useEffect, useState } from "react";
 
 import ContentRow from "../components/contentRow";
 import algoliaApp from "../../algolia";
-import amplitude from "amplitude-js";
 import { db } from "../../firebase";
 import { useSearchParams } from "react-router";
 
@@ -46,16 +45,12 @@ export default function SearchResults() {
 
   useEffect(() => {
     fetchSearchResults();
-    amplitude.getInstance().logEvent("Viewed Page: Search Results", {
-      "Search Query": q,
-    });
   }, [q]);
 
   return (
-    <ContentRow content={searchResults}>
-      <h3 className="text-xl">
-        Search results for &quot;<span className="font-bold">{q}</span>&quot;
-      </h3>
-    </ContentRow>
+    <ContentRow
+      content={searchResults}
+      title={`Search results for &quot; ${q}`}
+    />
   );
 }

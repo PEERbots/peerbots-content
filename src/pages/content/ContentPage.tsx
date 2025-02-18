@@ -11,49 +11,53 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import ContentRow from "../../components/contentRow";
 import { Link } from "react-router";
 import { Rating } from "@mui/material";
 import SummaryRating from "../../components/summaryRating";
 import TrustedStar from "../../components/trustedStar";
-import amplitude from "amplitude-js";
 import { db } from "../../../firebase";
 import { useNavigate, useParams } from "react-router";
 import { useFirebaseAuth } from "../../state/AuthProvider";
+import { Content, ContentData } from "../../types/content";
+import { UserRecord } from "../../types/user";
+import { Review } from "../../types/review";
+import { Tag } from "../../types/tag";
 
 export default function ContentPage() {
   const { user, userInDb } = useFirebaseAuth();
 
-  const [contentInfo, setContentInfo] = useState({});
-  const [author, setAuthor] = useState({});
-  const [reviews, setReviews] = useState([]);
-  const [reviewers, setReviewers] = useState([]);
+  const [contentInfo, setContentInfo] = useState<Content | null>(null);
+  const [author, setAuthor] = useState<UserRecord | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewers, setReviewers] = useState<UserRecord[]>([]);
   // const [copiesCount, setCopiesCount] = useState(null);
-  const [salesCount, setSalesCount] = useState(null);
-  const [tags, setTags] = useState([]);
+  const [salesCount, setSalesCount] = useState<number | null>(null);
+  const [tags, setTags] = useState<Tag[]>([]);
 
-  const [original, setOriginal] = useState({});
+  const [original, setOriginal] = useState<Content | null>(null);
 
-  const [contentAuthored, setContentAuthored] = useState(false);
-  const [contentPurchased, setContentPurchased] = useState(false);
-  const [copies, setCopies] = useState([]);
+  const [contentAuthored, setContentAuthored] = useState<boolean>(false);
+  const [contentPurchased, setContentPurchased] = useState<boolean>(false);
+  const [copies, setCopies] = useState<Content[]>([]);
 
-  const [editingName, setEditingName] = useState(false);
-  const [editingDescription, setEditingDescription] = useState(false);
-  const updateNameInput = useRef();
-  const updateDescriptionInput = useRef();
+  const [editingName, setEditingName] = useState<boolean>(false);
+  const [editingDescription, setEditingDescription] = useState<boolean>(false);
+  const updateNameInput = useRef<HTMLInputElement>(null);
+  const updateDescriptionInput = useRef<HTMLTextAreaElement>(null);
 
-  const [hasReview, setHasReview] = useState(false);
-  const [userReview, setUserReview] = useState({});
+  const [hasReview, setHasReview] = useState<boolean>(false);
+  const [userReview, setUserReview] = useState<Review | null>(null);
   const [newUserReviewRating, setNewUserReviewRating] = useState(0);
-  const reviewDescriptionInput = useRef();
+  const reviewDescriptionInput = useRef<HTMLInputElement>(null);
 
-  const copyAsInput = useRef();
-  const descriptionParagraph = useRef();
-  const [isDescriptionLong, setIsDescriptionLong] = useState(true);
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const copyAsInput = useRef<HTMLInputElement>(null);
+  const descriptionParagraph = useRef<HTMLParagraphElement>(null);
+  const [isDescriptionLong, setIsDescriptionLong] = useState<boolean>(true);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] =
+    useState<boolean>(false);
 
   const navigate = useNavigate();
   const { contentId } = useParams();
@@ -69,10 +73,14 @@ export default function ContentPage() {
     }
   }
 
-  const updateReview = async (e) => {
+  const updateReview = async (e: FormEvent) => {
     e.preventDefault();
-    if (contentPurchased && Object.keys(userInDb).length > 0) {
-      if (hasReview) {
+    if (
+      contentPurchased &&
+      userInDb !== null &&
+      Object.keys(userInDb).length > 0
+    ) {
+      if (hasReview && userReview !== null && reviewDescriptionInput.current) {
         const updatedReviewData = await updateDoc(
           doc(db, "reviews", userReview.id),
           {
@@ -81,42 +89,48 @@ export default function ContentPage() {
           }
         );
       } else {
-        const newReview = {
-          content: doc(db, "content", contentId),
-          user: doc(db, "users", userInDb.id),
-          rating: newUserReviewRating,
-          description: reviewDescriptionInput.current.value,
-        };
-        const addedReviewData = await addDoc(
-          collection(db, "reviews"),
-          newReview
-        );
+        if (reviewDescriptionInput.current && contentId) {
+          const newReview = {
+            content: doc(db, "content", contentId),
+            user: doc(db, "users", userInDb.id),
+            rating: newUserReviewRating,
+            description: reviewDescriptionInput.current.value,
+          };
+          const addedReviewData = await addDoc(
+            collection(db, "reviews"),
+            newReview
+          );
+        }
       }
       fetchUserReview();
       fetchReviews();
     }
   };
 
-  const updateName = async (e) => {
+  const updateName = async (e: FormEvent) => {
     e.preventDefault();
-    const contentRef = doc(db, "content", contentId);
-    await updateDoc(contentRef, { name: updateNameInput.current.value });
-    setEditingName(false);
-    fetchContentDetails();
+    if (contentId && updateNameInput.current) {
+      const contentRef = doc(db, "content", contentId);
+      await updateDoc(contentRef, { name: updateNameInput.current.value });
+      setEditingName(false);
+      fetchContentDetails();
+    }
   };
 
-  const updateDescription = async (e) => {
+  const updateDescription = async (e: FormEvent) => {
     e.preventDefault();
-    const contentRef = doc(db, "content", contentId);
-    await updateDoc(contentRef, {
-      description: updateDescriptionInput.current.value,
-    });
-    setEditingDescription(false);
-    fetchContentDetails();
+    if (contentId && updateDescriptionInput.current) {
+      const contentRef = doc(db, "content", contentId);
+      await updateDoc(contentRef, {
+        description: updateDescriptionInput.current.value,
+      });
+      setEditingDescription(false);
+      fetchContentDetails();
+    }
   };
 
-  const listPublicly = async (e) => {
-    if (contentAuthored) {
+  const listPublicly = async (e: FormEvent) => {
+    if (contentAuthored && contentId) {
       const contentRef = doc(db, "content", contentId);
       await updateDoc(contentRef, { public: true, price: 0 });
       fetchContentDetails();
@@ -124,7 +138,7 @@ export default function ContentPage() {
   };
 
   // Copied from peerbots-controller-web. Needs refactor to cloud fundtions that both repos call for Firebase-related editing
-  const updateTemplatesInfoForContent = async (contentID) => {
+  const updateTemplatesInfoForContent = async (contentID: string) => {
     const contentTemplates = await getDocs(
       collection(db, "content", contentID, "templates")
     );
@@ -144,30 +158,35 @@ export default function ContentPage() {
     return updatedContent;
   };
 
-  const copyContent = async (e) => {
+  const copyContent = async (e: FormEvent) => {
     e.preventDefault();
-    const contentName = copyAsInput.current.value;
-    let newContent = contentInfo;
-    newContent.name = contentName;
-    newContent.originalName = contentInfo.name;
-    newContent.copyOf = doc(db, "content", contentId);
-    newContent.copyDate = Timestamp.now();
-    newContent.public = false;
-    newContent.trusted = false;
-    newContent.owner = doc(db, "users", userInDb.id);
+    if (copyAsInput.current && contentInfo !== null) {
+      const contentName = copyAsInput.current.value;
+      let newContent: ContentData = contentInfo.data;
+      newContent.name = contentName;
+      newContent.originalName = contentInfo.name;
+      newContent.copyOf = doc(db, "content", contentId);
+      newContent.copyDate = Timestamp.now();
+      newContent.public = false;
+      newContent.trusted = false;
+      newContent.owner = doc(db, "users", userInDb.id);
 
-    const newContentData = await addDoc(collection(db, "content"), newContent);
-
-    if (contentInfo.templatesInfo && contentInfo.templatesInfo.length > 0) {
-      const allTemplates = await getDocs(
-        collection(db, "content", contentId, "templates")
+      const newContentData = await addDoc(
+        collection(db, "content"),
+        newContent
       );
-      allTemplates.forEach((templateDoc) => {
-        addDoc(
-          collection(db, "content", newContentData.id, "templates"),
-          templateDoc.data()
+
+      if (contentInfo.templatesInfo && contentInfo.templatesInfo.length > 0) {
+        const allTemplates = await getDocs(
+          collection(db, "content", contentId, "templates")
         );
-      });
+        allTemplates.forEach((templateDoc) => {
+          addDoc(
+            collection(db, "content", newContentData.id, "templates"),
+            templateDoc.data()
+          );
+        });
+      }
     }
 
     await updateTemplatesInfoForContent(newContentData.id);
@@ -385,12 +404,6 @@ export default function ContentPage() {
   useEffect(() => {
     fetchUserReview();
   }, [userInDb, contentPurchased]);
-
-  useEffect(() => {
-    amplitude.getInstance().logEvent("Viewed Page: Content Details", {
-      "Content ID": contentId,
-    });
-  }, []);
 
   useLayoutEffect(() => {
     calculateIsDescriptionLong();
@@ -647,14 +660,6 @@ export default function ContentPage() {
                       <button
                         className="btn-primary mt-4"
                         onClick={() => {
-                          amplitude
-                            .getInstance()
-                            .logEvent(
-                              "Clicked Button: Content Details - Acquire Content",
-                              {
-                                "Content ID": contentId,
-                              }
-                            );
                           acquireContent();
                         }}
                       >
@@ -777,7 +782,9 @@ export default function ContentPage() {
                     <Rating
                       max={5}
                       onChange={(e, value) => {
-                        setNewUserReviewRating(value);
+                        if (value) {
+                          setNewUserReviewRating(value);
+                        }
                       }}
                       className="p-4"
                     />
@@ -861,9 +868,7 @@ export default function ContentPage() {
       <div>
         {copies.length > 0 ? (
           <div>
-            <ContentRow content={copies}>
-              <h3 className="text-xl">Your copies</h3>
-            </ContentRow>
+            <ContentRow content={copies} title="Your copies" />
           </div>
         ) : (
           <div>{""}</div>

@@ -5,9 +5,8 @@ import { signOut } from "firebase/auth";
 
 import AuthForm from "./authForm";
 import { Dialog } from "@headlessui/react";
-import { Link, useNavigate } from "react-router";
+import { Link, NavLink, useNavigate } from "react-router";
 import SearchForm from "./searchForm";
-import amplitude from "amplitude-js";
 import { db, auth } from "../../firebase";
 
 import peerbotsLogo from "../assets/peerbots_logo.png";
@@ -20,7 +19,6 @@ export default function Navbar() {
   const [modalShown, setModalShown] = useState(false);
   const [signingUp, setSigningUp] = useState(false);
   const [hasListedContent, setHasListedContent] = useState(false);
-  const [navigation, setNavigation] = useState([]);
 
   const checkListedContent = async () => {
     if (userInDb) {
@@ -41,7 +39,6 @@ export default function Navbar() {
     signOut(auth)
       .then(() => {
         // Sign-out successful.
-        amplitude.getInstance().logEvent("Signed Out");
         navigate("/");
       })
       .catch((error) => {
@@ -55,35 +52,10 @@ export default function Navbar() {
     if (user) {
       setModalShown(false);
       checkListedContent();
-      setNavigation([
-        {
-          name: "My Content",
-          href: "/my/content",
-          current: true,
-          eventName: "Clicked Link: My Content",
-          eventProps: { "Event Source": "Navbar" },
-        },
-        {
-          name: "My Purchases",
-          href: "/my/purchases",
-          current: true,
-          eventName: "Clicked Link: My Purchases",
-          eventProps: { "Event Source": "Navbar" },
-        },
-        {
-          name: "My Listings",
-          href: "/my/listings",
-          current: hasListedContent,
-          eventName: "Clicked Link: My Listings",
-          eventProps: { "Event Source": "Navbar" },
-        },
-      ]);
-    } else {
-      setNavigation([]);
     }
   }, [user, userInDb, hasListedContent]);
 
-  function classNames(...classes) {
+  function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(" ");
   }
 
@@ -96,7 +68,6 @@ export default function Navbar() {
           className="fixed z-10 inset-0 overflow-y-auto"
         >
           <div className="block text-center items-end justify-center min-h-screen pt-20 px-4 sm:pt-4 md:m-10 sm:m-2">
-            <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
             <AuthForm mode={signingUp} />
           </div>
         </Dialog>
@@ -209,21 +180,34 @@ export default function Navbar() {
                     )}
                   </div>
                   <div className="hidden sm:block sm:ml-6">
-                    <div className="flex space-x-4">
-                      {navigation.map((item) => (
-                        <a
-                          key={item.name}
-                          href={item.href}
-                          className={classNames(
-                            item.current ? "hover:text-primary" : "hidden",
-                            "px-3 py-2 rounded-md text-sm font-medium"
-                          )}
-                          aria-current={item.current ? "page" : undefined}
+                    {user && (
+                      <div className="flex space-x-4">
+                        <NavLink
+                          className={
+                            "px-3 py-2 rounded-md text-sm font-medium hover:text-primary"
+                          }
+                          to={"/my/content"}
                         >
-                          {item.name}
-                        </a>
-                      ))}
-                    </div>
+                          My Content
+                        </NavLink>
+                        <NavLink
+                          className={
+                            "px-3 py-2 rounded-md text-sm font-medium hover:text-primary"
+                          }
+                          to={"/my/purchases"}
+                        >
+                          My Purchases
+                        </NavLink>
+                        <NavLink
+                          className={
+                            "px-3 py-2 rounded-md text-sm font-medium hover:text-primary"
+                          }
+                          to={"/my/listings"}
+                        >
+                          My Listings
+                        </NavLink>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -280,35 +264,37 @@ export default function Navbar() {
                         leaveFrom="transform opacity-100 scale-100"
                         leaveTo="transform opacity-0 scale-95"
                       >
-                        <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                          <Menu.Item>
-                            {({ active }) => (
-                              <Link to={`/u/${userInDb.id}`}>
+                        {user && userInDb && (
+                          <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <Menu.Item>
+                              {({ active }) => (
+                                <Link to={`/u/${userInDb.id}`}>
+                                  <a
+                                    className={classNames(
+                                      active ? "" : "",
+                                      "block px-4 py-2 text-sm text-gray-700 hover:font-bold"
+                                    )}
+                                  >
+                                    My Profile
+                                  </a>
+                                </Link>
+                              )}
+                            </Menu.Item>
+                            <Menu.Item>
+                              {({ active }) => (
                                 <a
+                                  onClick={signOutOfFirebase}
                                   className={classNames(
-                                    active ? "" : "",
+                                    active ? "bg-gray-100" : "",
                                     "block px-4 py-2 text-sm text-gray-700 hover:font-bold"
                                   )}
                                 >
-                                  My Profile
+                                  Sign out
                                 </a>
-                              </Link>
-                            )}
-                          </Menu.Item>
-                          <Menu.Item>
-                            {({ active }) => (
-                              <a
-                                onClick={signOutOfFirebase}
-                                className={classNames(
-                                  active ? "bg-gray-100" : "",
-                                  "block px-4 py-2 text-sm text-gray-700 hover:font-bold"
-                                )}
-                              >
-                                Sign out
-                              </a>
-                            )}
-                          </Menu.Item>
-                        </Menu.Items>
+                              )}
+                            </Menu.Item>
+                          </Menu.Items>
+                        )}
                       </Transition>
                     </Menu>
                   </div>
@@ -341,20 +327,34 @@ export default function Navbar() {
 
             <Disclosure.Panel className="sm:hidden">
               <div className="px-2 pt-2 pb-3 space-y-1">
-                {navigation.map((item) => (
-                  <Disclosure.Button
-                    key={item.name}
-                    as="a"
-                    href={item.href}
-                    className={classNames(
-                      item.current ? "hover:text-primary" : "hidden",
-                      "block px-3 py-2 rounded-md text-base font-medium"
-                    )}
-                    aria-current={item.current ? "page" : undefined}
-                  >
-                    {item.name}
-                  </Disclosure.Button>
-                ))}
+                {user && (
+                  <div className="flex space-x-4">
+                    <NavLink
+                      className={
+                        "px-3 py-2 rounded-md text-sm font-medium hover:text-primary"
+                      }
+                      to={"/my/content"}
+                    >
+                      My Content
+                    </NavLink>
+                    <NavLink
+                      className={
+                        "px-3 py-2 rounded-md text-sm font-medium hover:text-primary"
+                      }
+                      to={"/my/purchases"}
+                    >
+                      My Purchases
+                    </NavLink>
+                    <NavLink
+                      className={
+                        "px-3 py-2 rounded-md text-sm font-medium hover:text-primary"
+                      }
+                      to={"/my/listings"}
+                    >
+                      My Listings
+                    </NavLink>
+                  </div>
+                )}
               </div>
             </Disclosure.Panel>
           </>

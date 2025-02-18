@@ -1,20 +1,32 @@
-import { useState, useEffect, createContext, useContext } from "react";
-import { onAuthStateChanged } from "firebase/auth";
+import {
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  ReactElement,
+} from "react";
+import { onAuthStateChanged, UserInfo } from "firebase/auth";
 import { auth, db } from "../../firebase";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import amplitude from "amplitude-js";
+import { UserRecord } from "../types/user";
 
-const FirebaseAuthContext = createContext();
+const FirebaseAuthContext = createContext<{
+  user: UserInfo | null;
+  userInDb: UserRecord | null;
+}>({ user: null, userInDb: null });
 
-export const FirebaseAuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [userInDb, setUserInDb] = useState(null);
+export const FirebaseAuthProvider = ({
+  children,
+}: {
+  children: ReactElement;
+}) => {
+  const [user, setUser] = useState<UserInfo | null>(null);
+  const [userInDb, setUserInDb] = useState<UserRecord | null>(null);
 
-  const fetchUserInDbOrAddIfNotFound = async (userToFetch) => {
+  const fetchUserInDbOrAddIfNotFound = async (userToFetch: UserInfo | null) => {
     if (userToFetch) {
       const docSnap = await getDoc(doc(db, "users", userToFetch.uid));
       if (docSnap.exists()) {
-        amplitude.getInstance().setUserId(docSnap.id);
         await updateDoc(doc(db, "users", userToFetch.uid), {
           name: userToFetch.displayName,
           photoUrl: userToFetch.photoURL,
@@ -32,9 +44,11 @@ export const FirebaseAuthProvider = ({ children }) => {
         setUserInDb({
           id: userToFetch.uid,
           data: {
-            name: userToFetch.displayName,
-            photoUrl: userToFetch.photoURL,
-            email: userToFetch.email,
+            ...(userToFetch.email && { email: userToFetch.email }),
+            ...(userToFetch.displayName && { name: userToFetch.displayName }),
+            ...(userToFetch.photoURL && {
+              photoUrl: userToFetch.photoURL,
+            }),
           },
         });
       }

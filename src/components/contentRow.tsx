@@ -10,14 +10,23 @@ import { useEffect, useState } from "react";
 
 import ContentCard from "./contentCard";
 import { db } from "../../firebase";
+import { firebaseDoc } from "../types/firebase_helper_types";
+import { Tag } from "../types/tag";
+import { Review } from "../types/review";
+import { Content } from "../types/content";
 
-export default function ContentRow({ content, children }) {
-  const [authors, setAuthors] = useState([]);
-  const [reviews, setReviews] = useState([]);
-  const [tags, setTags] = useState([]);
-  content.forEach((content) => {
-    content.data.id = content.id;
-  });
+export default function ContentRow({
+  content,
+  title,
+  description,
+}: {
+  content: Content[];
+  title?: string;
+  description?: string;
+}) {
+  const [authors, setAuthors] = useState<firebaseDoc[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
 
   const fetchContentRowDetails = async () => {
     if (content && content.length > 0) {
@@ -43,7 +52,7 @@ export default function ContentRow({ content, children }) {
         .filter((d) => d.data.tags)
         .map((doc) => {
           console.log(doc);
-          return doc.data.tags.flat().map((tag) => {
+          return doc.data.tags.flat().map((tag: Tag) => {
             return tag.id;
           });
         })
@@ -61,7 +70,7 @@ export default function ContentRow({ content, children }) {
             id: doc.id,
             data: doc.data(),
           };
-        });
+        }) as Tag[];
         setTags(tagsFromDb);
       }
 
@@ -80,7 +89,7 @@ export default function ContentRow({ content, children }) {
           content: docData.content.id,
           data: docData,
         };
-      });
+      }) as Review[];
 
       setReviews(reviewsFromDb);
     }
@@ -91,14 +100,19 @@ export default function ContentRow({ content, children }) {
   return (
     <>
       <div className="bg-white shadow-md my-4 mx-2 p-8 rounded block">
-        {children && <div className="mb-6">{children}</div>}
+        {title && (
+          <div className="mb-6">
+            <h3 className="text-xl font-bold">{title}</h3>
+            {description && <p className="text-sm">{description}</p>}
+          </div>
+        )}
         <div className="w-full grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
           {content &&
             authors &&
             content.map((eachContent) => (
               <ContentCard
                 key={eachContent.id}
-                content={eachContent.data}
+                content={eachContent}
                 author={
                   authors.filter((author) => {
                     return author.id == eachContent.data.owner.id;

@@ -3,13 +3,13 @@ import { useEffect, useState } from "react";
 
 import CheckAuth from "../../components/checkAuth";
 import ContentRow from "../../components/contentRow";
-import amplitude from "amplitude-js";
 import { db } from "../../../firebase";
 import { useFirebaseAuth } from "../../state/AuthProvider";
+import { Content } from "../../types/content";
 
 export default function MyContentPage() {
   const { userInDb } = useFirebaseAuth();
-  const [content, setContent] = useState([]);
+  const [content, setContent] = useState<Content[]>([]);
 
   const fetchUserContent = async () => {
     if (userInDb && userInDb.id) {
@@ -25,7 +25,7 @@ export default function MyContentPage() {
           id: doc.id,
           data: doc.data(),
         };
-      });
+      }) as Content[];
       setContent(contentFromDb);
     }
   };
@@ -33,10 +33,6 @@ export default function MyContentPage() {
   useEffect(() => {
     fetchUserContent();
   }, [userInDb]);
-
-  useEffect(() => {
-    amplitude.getInstance().logEvent("Viewed Page: My Content");
-  }, []);
 
   return (
     <div>
@@ -46,16 +42,14 @@ export default function MyContentPage() {
             content={content.filter((contentItem) => {
               return contentItem.data.copyOf;
             })}
-          >
-            <h3 className="text-xl">Your Copied Content</h3>
-          </ContentRow>
+            title="Your Copied Content"
+          ></ContentRow>
           <ContentRow
             content={content.filter((contentItem) => {
               return !contentItem.data.copyOf;
             })}
-          >
-            <h3 className="text-xl">Your Authored Content</h3>
-          </ContentRow>
+            title="Your Authored Content"
+          ></ContentRow>
         </div>
       </CheckAuth>
     </div>

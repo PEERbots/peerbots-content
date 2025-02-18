@@ -9,15 +9,15 @@ import {
 import { useEffect, useState } from "react";
 
 import ContentRow from "../../components/contentRow";
-import amplitude from "amplitude-js";
 import { db } from "../../../firebase";
 import { useNavigate, useParams } from "react-router";
+import { firebaseDoc } from "../../types/firebase_helper_types";
 
 export default function TagPage() {
   const navigate = useNavigate();
   const { tagId } = useParams();
-  const [content, setContent] = useState([]);
-  const [tagInfo, setTagInfo] = useState({});
+  const [content, setContent] = useState<firebaseDoc[]>([]);
+  const [tagInfo, setTagInfo] = useState<firebaseDoc | null>(null);
 
   const fetchTagContent = async () => {
     if (tagId) {
@@ -62,18 +62,9 @@ export default function TagPage() {
     fetchTagContent();
   }, [tagId]);
 
-  useEffect(() => {
-    if (tagInfo && Object.keys(tagInfo).length > 0) {
-      amplitude.getInstance().logEvent("Viewed Page: Tag Details", {
-        "Tag ID": tagId,
-        "Tag Name": tagInfo.data.name,
-      });
-    }
-  }, [tagInfo.data]);
-
   return (
     <div>
-      {tagInfo.data ? (
+      {tagInfo && tagInfo.data ? (
         <>
           <div className="bg-white shadow-md my-4 mx-2 p-8">
             <h1 className="text-2xl mb-4">

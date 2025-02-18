@@ -1,14 +1,8 @@
 import LatestContentRow from "../components/latestContentRow";
-import SearchForm from "../components/searchForm";
+import { SearchForm } from "../components/searchForm";
 import TrustedContentRow from "../components/trustedContentRow";
-import amplitude from "amplitude-js";
-import { useEffect } from "react";
 
 export default function HomePage() {
-  useEffect(() => {
-    amplitude.getInstance().logEvent("Viewed Page: Home");
-  }, []);
-
   return (
     <div>
       <head>
@@ -21,7 +15,9 @@ export default function HomePage() {
       </head>
       <div>
         <div className="lg:hidden bg-white shadow-md my-4 mx-2 p-8 rounded flex justify-center content-center">
-          <SearchForm className="flex-shrink" />
+          <div className="flex-shrink">
+            <SearchForm />
+          </div>
         </div>
         <div>
           <TrustedContentRow />

@@ -1,7 +1,8 @@
+import { ReactElement } from "react";
 import { useFirebaseAuth } from "../state/AuthProvider";
 import AuthForm from "./authForm";
 
-export default function CheckAuth({ children }) {
+export default function CheckAuth({ children }: { children: ReactElement }) {
   const { user } = useFirebaseAuth();
   return (
     <>
@@ -9,9 +10,8 @@ export default function CheckAuth({ children }) {
         <>{children}</>
       ) : (
         <div className="flex justify-center">
-          <AuthForm>
-            <h3>You need to sign in to see the contents of this page!</h3>
-          </AuthForm>
+          <h3>You need to sign in to see the contents of this page!</h3>
+          <AuthForm mode={false}></AuthForm>
         </div>
       )}
     </>

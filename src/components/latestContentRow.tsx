@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { db } from "../../firebase";
 import { collection, query, where, limit, getDocs } from "firebase/firestore";
 import ContentRow from "./contentRow";
+import { Content } from "../types/content";
 
 export default function LatestContentRow() {
-  const [latestContent, setLatestContent] = useState([]);
+  const [latestContent, setLatestContent] = useState<Content[]>([]);
   const fetchLatestContent = async () => {
     const q = query(
       collection(db, "content"),
@@ -17,7 +18,7 @@ export default function LatestContentRow() {
         id: doc.id,
         data: doc.data(),
       };
-    });
+    }) as Content[];
 
     setLatestContent(latestContentFromDb);
   };
@@ -27,9 +28,7 @@ export default function LatestContentRow() {
   }, []);
   return (
     <>
-      <ContentRow content={latestContent}>
-        <h3 className="text-xl font-bold">Latest Content</h3>
-      </ContentRow>
+      <ContentRow content={latestContent} title={"Latest Content"} />
     </>
   );
 }

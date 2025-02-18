@@ -3,7 +3,7 @@ export default function Footer() {
     <footer className="grid grid-cols-1 text-center md:grid-cols-3 md:h-16 align-middle py-4 justify-evenly bg-white shadow-md my-4 mx-2 rounded">
       <div className="my-2 mx-4 text-xs">
         <a href="https://peerbots.org" target="_blank" rel="noreferrer">
-          © 2021 Peerbots, Inc. 501(c)3 85-1894594
+          © 2025 Peerbots, Inc. 501(c)3 85-1894594
         </a>
       </div>
       <div className="my-2 space-x-2">

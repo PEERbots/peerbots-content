@@ -7,29 +7,29 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 import ContentRow from "../components/contentRow";
-import amplitude from "amplitude-js";
 import { db } from "../../firebase";
 import { useNavigate, useParams } from "react-router";
 import { useFirebaseAuth } from "../state/AuthProvider";
+import { firebaseDoc } from "../types/firebase_helper_types";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { username } = useParams();
-  const [userId, setUserId] = useState(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState({});
-  const [content, setContent] = useState([]);
+  const [content, setContent] = useState<firebaseDoc[]>([]);
 
   const { user, userInDb } = useFirebaseAuth();
   const [viewerIsAuthor, setViewerIsAuthor] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [editingDescription, setEditingDescription] = useState(false);
   const [editingUsername, setEditingUsername] = useState(false);
-  const updateNameInput = useRef();
-  const updateDescriptionInput = useRef();
-  const updateUsernameInput = useRef();
+  const updateNameInput = useRef<HTMLInputElement>(null);
+  const updateDescriptionInput = useRef<HTMLTextAreaElement>(null);
+  const updateUsernameInput = useRef<HTMLInputElement>(null);
   const [usernameErrorMessage, setUsernameErrorMessage] = useState("");
 
   const fetchUserDetails = async () => {
@@ -80,7 +80,7 @@ export default function ProfilePage() {
     }
   };
 
-  const updateName = async (e) => {
+  const updateName = async (e: FormEvent) => {
     e.preventDefault();
     const userRef = doc(db, "users", userId);
     await updateDoc(userRef, { name: updateNameInput.current.value });
@@ -123,9 +123,6 @@ export default function ProfilePage() {
 
   useEffect(() => {
     fetchUserDetails();
-    amplitude.getInstance().logEvent("Viewed Page: Profile Details", {
-      "Profile ID": username,
-    });
   }, [username]);
 
   useEffect(() => {
@@ -309,14 +306,15 @@ export default function ProfilePage() {
           </div>
           <div>
             <div>
-              <ContentRow content={content}>
-                <h3 className="text-xl">Content authored by {userInfo.name}</h3>
-              </ContentRow>
+              <ContentRow
+                content={content}
+                title={`Content authored by ${userInfo.name}`}
+              ></ContentRow>
             </div>
           </div>
         </>
       ) : (
-        {}
+        <></>
       )}
     </div>
   );

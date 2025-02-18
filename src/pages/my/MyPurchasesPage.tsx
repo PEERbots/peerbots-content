@@ -10,13 +10,13 @@ import { useEffect, useState } from "react";
 
 import CheckAuth from "../../components/checkAuth";
 import ContentRow from "../../components/contentRow";
-import amplitude from "amplitude-js";
 import { db } from "../../../firebase";
 import { useFirebaseAuth } from "../../state/AuthProvider";
+import { Content } from "../../types/content";
 
 export default function MyPurchasesPage() {
   const { userInDb } = useFirebaseAuth();
-  const [purchasedContent, setPurchasedContent] = useState([]);
+  const [purchasedContent, setPurchasedContent] = useState<Content[]>([]);
 
   const fetchPurchasedContent = async () => {
     if (userInDb && userInDb.id) {
@@ -42,7 +42,7 @@ export default function MyPurchasesPage() {
           id: doc.id,
           data: doc.data(),
         };
-      });
+      }) as Content[];
       setPurchasedContent(contentFromDb);
     }
   };
@@ -51,17 +51,14 @@ export default function MyPurchasesPage() {
     fetchPurchasedContent();
   }, [userInDb]);
 
-  useEffect(() => {
-    amplitude.getInstance().logEvent("Viewed Page: My Purchases");
-  }, []);
-
   return (
     <div>
       <CheckAuth>
         <div>
-          <ContentRow content={purchasedContent}>
-            <h3 className="text-xl">Purchased Content</h3>
-          </ContentRow>
+          <ContentRow
+            content={purchasedContent}
+            title="Purchased Content"
+          ></ContentRow>
         </div>
       </CheckAuth>
     </div>
