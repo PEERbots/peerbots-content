@@ -160,11 +160,11 @@ export default function ContentPage() {
 
   const copyContent = async (e: FormEvent) => {
     e.preventDefault();
-    if (copyAsInput.current && contentInfo !== null) {
+    if (copyAsInput.current && contentInfo !== null && userInDb !== null) {
       const contentName = copyAsInput.current.value;
       let newContent: ContentData = contentInfo.data;
       newContent.name = contentName;
-      newContent.originalName = contentInfo.name;
+      newContent.originalName = contentInfo.data.name;
       newContent.copyOf = doc(db, "content", contentId);
       newContent.copyDate = Timestamp.now();
       newContent.public = false;
@@ -176,7 +176,10 @@ export default function ContentPage() {
         newContent
       );
 
-      if (contentInfo.templatesInfo && contentInfo.templatesInfo.length > 0) {
+      if (
+        contentInfo.data.templatesInfo &&
+        contentInfo.data.templatesInfo.length > 0
+      ) {
         const allTemplates = await getDocs(
           collection(db, "content", contentId, "templates")
         );
@@ -187,16 +190,16 @@ export default function ContentPage() {
           );
         });
       }
+
+      await updateTemplatesInfoForContent(newContentData.id);
+
+      navigate(`/content/${newContentData.id}`);
     }
-
-    await updateTemplatesInfoForContent(newContentData.id);
-
-    navigate(`/content/${newContentData.id}`);
   };
 
-  const checkContentOwned = async (content) => {
+  const checkContentOwned = async (content: Content) => {
     if (userInDb && Object.keys(userInDb).length > 0) {
-      if (userInDb.id == content.owner.id) {
+      if (userInDb.id == content.data.owner.id) {
         setContentAuthored(true);
         setContentPurchased(false);
         return true;
@@ -219,7 +222,7 @@ export default function ContentPage() {
   };
 
   const acquireContent = async () => {
-    if (!(contentAuthored || contentPurchased)) {
+    if (!(contentAuthored || contentPurchased) && userInDb !== null) {
       const data = await addDoc(collection(db, "sales"), {
         buyer: doc(db, "users", userInDb.id),
         content: doc(db, "content", contentId),
@@ -230,38 +233,40 @@ export default function ContentPage() {
   };
 
   const fetchCopies = async () => {
-    const copiesQuery = query(
-      collection(db, "content"),
-      where("owner", "==", doc(db, "users", userInDb.id)),
-      where("copyOf", "==", doc(db, "content", contentId))
-    );
-    const data = await getDocs(copiesQuery);
-    const copiesInDb = data.docs.map((doc) => {
-      return {
-        id: doc.id,
-        data: doc.data(),
-      };
-    });
-    setCopies(copiesInDb);
-  };
-
-  const fetchOriginal = async () => {
-    if (contentInfo.copyOf) {
-      const originalInDb = await getDoc(contentInfo.copyOf);
-      setOriginal(originalInDb.data());
+    if (userInDb !== null) {
+      const copiesQuery = query(
+        collection(db, "content"),
+        where("owner", "==", doc(db, "users", userInDb.id)),
+        where("copyOf", "==", doc(db, "content", contentId))
+      );
+      const data = await getDocs(copiesQuery);
+      const copiesInDb = data.docs.map((doc) => {
+        return {
+          id: doc.id,
+          data: doc.data(),
+        };
+      }) as Content[];
+      setCopies(copiesInDb);
     }
   };
 
-  const fetchAuthor = async (contentInfoFromDb) => {
-    const authorRef = doc(db, "users", contentInfoFromDb.owner.id);
+  const fetchOriginal = async () => {
+    if (contentInfo !== null && contentInfo.data.copyOf) {
+      const originalInDb = await getDoc(contentInfo.data.copyOf);
+      setOriginal(originalInDb.data() as Content);
+    }
+  };
+
+  const fetchAuthor = async (contentInfoFromDb: Content) => {
+    const authorRef = doc(db, "users", contentInfoFromDb.data.owner.id);
     const author = await getDoc(authorRef);
-    const authorInfo = author.data();
+    const authorInfo = { id: author.id, data: author.data() } as UserRecord;
     setAuthor(authorInfo);
   };
 
-  const fetchTags = async (contentInfoFromDb) => {
-    if (contentInfoFromDb.tags) {
-      const tagsIds = contentInfoFromDb.tags.map((tag) => {
+  const fetchTags = async (contentInfoFromDb: Content) => {
+    if (contentInfoFromDb.data.tags) {
+      const tagsIds = contentInfoFromDb.data.tags.map((tag) => {
         return tag.id;
       });
       const tagsQuery = query(
@@ -274,7 +279,7 @@ export default function ContentPage() {
           id: doc.id,
           data: doc.data(),
         };
-      });
+      }) as Tag[];
       setTags(tagsFromDb);
     } else {
       setTags([]);
@@ -293,7 +298,7 @@ export default function ContentPage() {
         id: doc.id,
         data: doc.data(),
       };
-    });
+    }) as Review[];
 
     const reviewersIds = reviewsFromDb.map((review) => review.data.user.id);
     if (reviewersIds.length > 0) {
@@ -304,7 +309,7 @@ export default function ContentPage() {
       const reviewersData = await getDocs(reviewersQuery);
       const reviewersFromDb = reviewersData.docs.map((doc) => {
         return { id: doc.id, data: doc.data() };
-      });
+      }) as UserRecord[];
       setReviewers(reviewersFromDb);
       setReviews(reviewsFromDb);
     } else {
@@ -325,11 +330,11 @@ export default function ContentPage() {
         setUserReview({
           id: reviewsData.docs[0].id,
           data: reviewsData.docs[0].data(),
-        });
+        } as Review);
         setHasReview(true);
       } else {
         setHasReview(false);
-        setUserReview({});
+        setUserReview(null);
       }
     }
   };
@@ -361,7 +366,7 @@ export default function ContentPage() {
       const content = await getDoc(contentRef);
 
       if (content.exists()) {
-        setContentInfo(content.data());
+        setContentInfo({ id: content.id, data: content.data() } as Content);
       } else {
         // Go to 404
         navigate("/not-found");
@@ -393,10 +398,11 @@ export default function ContentPage() {
       Object.keys(contentInfo).length != 0 &&
       Object.keys(userInDb).length != 0
     ) {
-      const contentOwned = checkContentOwned(contentInfo);
-      if (contentOwned) {
-        fetchCopies();
-      }
+      checkContentOwned(contentInfo).then((isOwned) => {
+        if (isOwned) {
+          fetchCopies();
+        }
+      });
     }
     fetchUserReview();
   }, [contentInfo, user, userInDb]);
@@ -420,7 +426,12 @@ export default function ContentPage() {
           <div className="bg-white shadow-md my-4 mx-2 rounded p-8">
             <div className="flex items-center">
               <span className="text-2xl flex items-center">
-                {contentInfo.name} <TrustedStar content={contentInfo} />
+                {contentInfo && (
+                  <>
+                    {contentInfo.data.name}
+                    <TrustedStar content={contentInfo} />
+                  </>
+                )}
               </span>
               {user && contentAuthored && (
                 <button
@@ -441,7 +452,7 @@ export default function ContentPage() {
                 </button>
               )}
             </div>
-            {editingName && (
+            {editingName && contentInfo && (
               <div>
                 <form onSubmit={updateName}>
                   <label>New Name</label>
@@ -450,7 +461,7 @@ export default function ContentPage() {
                     ref={updateNameInput}
                     className="input-base form-input"
                     name="updatedName"
-                    defaultValue={contentInfo.name}
+                    defaultValue={contentInfo.data.name}
                   ></input>
                   <button
                     className="btn-primary"
@@ -475,9 +486,9 @@ export default function ContentPage() {
               {author ? (
                 <div className="text-gray-800">
                   <span>
-                    {author.photoUrl ? (
+                    {author.data.photoUrl ? (
                       <img
-                        src={author.photoUrl}
+                        src={author.data.photoUrl}
                         className="h-8 inline-block rounded-full"
                       ></img>
                     ) : (
@@ -487,7 +498,7 @@ export default function ContentPage() {
                       ></img>
                     )}
                   </span>
-                  <span className="ml-1 text-base">{author.name}</span>
+                  <span className="ml-1 text-base">{author.data.name}</span>
                 </div>
               ) : (
                 <div></div>
@@ -516,11 +527,11 @@ export default function ContentPage() {
 
           {/* Templates Section */}
           {contentInfo &&
-            contentInfo.templatesInfo &&
-            contentInfo.templatesInfo.length > 0 && (
+            contentInfo.data.templatesInfo &&
+            contentInfo.data.templatesInfo.length > 0 && (
               <div className="row-end-auto bg-white shadow-md my-4 mx-2 rounded p-8">
                 <h3 className="block text-xl mb-4">Included Templates</h3>
-                {contentInfo.templatesInfo.map((template) => {
+                {contentInfo.data.templatesInfo.map((template) => {
                   return (
                     <div
                       className="border border-gray-400 mx-2 p-2 rounded inline-block"
@@ -557,16 +568,15 @@ export default function ContentPage() {
                   </button>
                 </div>
               )}
-              {editingDescription && (
+              {editingDescription && contentInfo && (
                 <div>
                   <form onSubmit={updateDescription}>
                     <label>New Description</label>
                     <textarea
-                      type="text"
                       ref={updateDescriptionInput}
                       className="input-base form-input"
                       name="updatedDescription"
-                      defaultValue={contentInfo.description}
+                      defaultValue={contentInfo.data.description}
                     ></textarea>
                     <button
                       className="btn-primary"
@@ -592,7 +602,7 @@ export default function ContentPage() {
                 } `}
                 ref={descriptionParagraph}
               >
-                {contentInfo.description}
+                {contentInfo && contentInfo.data.description}
               </p>
               {isDescriptionLong && !isDescriptionExpanded && (
                 <p className="font-bold text-dark-primary cursor-pointer">
@@ -613,8 +623,9 @@ export default function ContentPage() {
           {/* Public Listing Section */}
           {user &&
             contentAuthored &&
-            !contentInfo.copyOf &&
-            !contentInfo.public && (
+            contentInfo &&
+            !contentInfo.data.copyOf &&
+            !contentInfo.data.public && (
               <div className="bg-white shadow-md my-4 mx-2 rounded p-8 text-center">
                 <div className="text-sm mb-2">
                   Listing content will make it publicly available to others for
@@ -633,72 +644,75 @@ export default function ContentPage() {
             )}
 
           {/* Acquisition or Statistics Section */}
-          {contentInfo.public && !contentInfo.copyOf && (
-            <div className="bg-white shadow-md my-4 mx-2 rounded p-8 text-center">
-              <div className="text-center">
-                <div className="text-sm mb-2">
-                  This content is available for
-                </div>
-                {contentInfo.price == 0 ? (
-                  <span className="uppercase text-2xl text-green-700 font-bold">
-                    Free
-                  </span>
-                ) : (
-                  <span className="text-2xl text-accent-two font-bold">
-                    {new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "USD",
-                    }).format(contentInfo.price)}
-                  </span>
-                )}
-              </div>
-
-              {user ? (
-                <>
-                  {!(contentAuthored || contentPurchased) && (
-                    <div>
-                      <button
-                        className="btn-primary mt-4"
-                        onClick={() => {
-                          acquireContent();
-                        }}
-                      >
-                        + Acquire
-                      </button>{" "}
-                    </div>
+          {contentInfo &&
+            contentInfo.data.public &&
+            !contentInfo.data.copyOf && (
+              <div className="bg-white shadow-md my-4 mx-2 rounded p-8 text-center">
+                <div className="text-center">
+                  <div className="text-sm mb-2">
+                    This content is available for
+                  </div>
+                  {contentInfo.data.price == 0 ? (
+                    <span className="uppercase text-2xl text-green-700 font-bold">
+                      Free
+                    </span>
+                  ) : (
+                    <span className="text-2xl text-accent-two font-bold">
+                      {contentInfo.data.price &&
+                        new Intl.NumberFormat("en-US", {
+                          style: "currency",
+                          currency: "USD",
+                        }).format(contentInfo.data.price)}
+                    </span>
                   )}
-                </>
-              ) : (
-                <div className="mt-2">
-                  <span className="text-sm">
-                    You must sign in to acquire content.
-                  </span>
-                  <button className="btn-primary" disabled>
-                    + Acquire
-                  </button>
                 </div>
-              )}
 
-              {/* Sales, Copies and Rating */}
-              <div className="text-center my-2 mt-8">
-                <span className="mr-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 inline-block mr-1"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                    />
-                  </svg>
-                  {salesCount} sales{" "}
-                </span>
-                {/* <span>
+                {user ? (
+                  <>
+                    {!(contentAuthored || contentPurchased) && (
+                      <div>
+                        <button
+                          className="btn-primary mt-4"
+                          onClick={() => {
+                            acquireContent();
+                          }}
+                        >
+                          + Acquire
+                        </button>{" "}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="mt-2">
+                    <span className="text-sm">
+                      You must sign in to acquire content.
+                    </span>
+                    <button className="btn-primary" disabled>
+                      + Acquire
+                    </button>
+                  </div>
+                )}
+
+                {/* Sales, Copies and Rating */}
+                <div className="text-center my-2 mt-8">
+                  <span className="mr-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 inline-block mr-1"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                      />
+                    </svg>
+                    {salesCount} sales{" "}
+                  </span>
+                  {/* <span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-4 w-4 inline-block mr-1"
@@ -715,25 +729,26 @@ export default function ContentPage() {
                   </svg>
                   {copiesCount} copies
                 </span> */}
+                </div>
+                <div className="text-center">
+                  {!contentInfo.data.copyOf &&
+                    contentInfo.data.public &&
+                    reviews && <SummaryRating reviews={reviews} />}
+                </div>
               </div>
-              <div className="text-center">
-                {!contentInfo.copyOf && contentInfo.public && reviews && (
-                  <SummaryRating reviews={reviews} />
-                )}
-              </div>
-            </div>
-          )}
+            )}
 
           {/* Link to original section */}
-          {contentInfo.copyOf && (
+          {contentInfo && contentInfo.data.copyOf && (
             <div className="bg-white shadow-md my-4 mx-2 rounded p-8">
               <div className="text-center">
                 This is a copy of
                 <div>
-                  <Link to={`/content/${contentInfo.copyOf.id}`}>
-                    <a className="underline decoration-primary text-primary hover:text-dark-primary hover:decoration-dark-primary font-bold">
-                      {original.name}
-                    </a>
+                  <Link
+                    to={`/content/${contentInfo.data.copyOf.id}`}
+                    className="underline decoration-primary text-primary hover:text-dark-primary hover:decoration-dark-primary font-bold"
+                  >
+                    {original && original.data.name}
                   </Link>
                 </div>
               </div>
@@ -741,7 +756,7 @@ export default function ContentPage() {
           )}
 
           {/* Copy this content section */}
-          {user && (contentAuthored || contentPurchased) && (
+          {user && contentInfo && (contentAuthored || contentPurchased) && (
             <div className="bg-white shadow-md my-4 mx-2 rounded p-8 text-center">
               <form onSubmit={copyContent}>
                 <label className="block mb-2">Copy As</label>
@@ -750,7 +765,7 @@ export default function ContentPage() {
                   ref={copyAsInput}
                   className="input-base form-input w-full text-gray-700"
                   name="copyAs"
-                  defaultValue={`Copy of ${contentInfo.name}`}
+                  defaultValue={`Copy of ${contentInfo.data.name}`}
                 ></input>
                 <button
                   className="btn-primary mt-4"
@@ -766,7 +781,7 @@ export default function ContentPage() {
       </div>
 
       {/* Reviews Section */}
-      {contentInfo.public && !contentInfo.copyOf && (
+      {contentInfo && contentInfo.data.public && !contentInfo.data.copyOf && (
         <div className="bg-white shadow-md my-4 mx-2 rounded p-8">
           <div className="mb-6">
             {user && contentPurchased && (

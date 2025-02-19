@@ -11,9 +11,12 @@ export type ContentData = {
   name: string;
   originalName?: string;
   description?: string;
-  owner: UserRecord;
+  owner: UserRecord | DocumentReference;
   copyOf?: Content | DocumentReference;
   copyDate: Timestamp;
   price?: number;
   tags: Tag[];
+  public?: boolean;
+  trusted?: boolean;
+  templatesInfo?: { id: string; title: string }[];
 };

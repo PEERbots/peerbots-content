@@ -14,8 +14,8 @@ export default function NotFoundPage() {
         </div>
         <div>
           Try going to the{" "}
-          <Link to="/">
-            <a className="underline text-dark-primary">home page</a>
+          <Link to="/" className="underline text-dark-primary">
+            home page
           </Link>{" "}
           and starting over?
         </div>

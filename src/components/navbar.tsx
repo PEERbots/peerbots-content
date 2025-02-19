@@ -120,17 +120,7 @@ export default function Navbar() {
                   </div>
                 ) : (
                   <div>
-                    <div className="items-center block lg:hidden w-24">
-                      <Link to="/">
-                        <img
-                          src={peerbotsLogo}
-                          alt="Peerbots Logo"
-                          width={192}
-                          height={33}
-                        />
-                      </Link>
-                    </div>
-                    <div className="hidden lg:block w-48">
+                    <div className="items-center block w-24 lg:w-48">
                       <Link to="/">
                         <img
                           src={peerbotsLogo}
@@ -146,17 +136,7 @@ export default function Navbar() {
                   <div className="flex-shrink-0 flex items-center">
                     {user ? (
                       <div>
-                        <div className="block lg:hidden w-24">
-                          <Link to="/">
-                            <img
-                              src={peerbotsLogo}
-                              alt="Peerbots Logo"
-                              width={192}
-                              height={33}
-                            />
-                          </Link>
-                        </div>
-                        <div className="hidden lg:block w-48">
+                        <div className="block w-24 lg:w-48">
                           <Link to="/">
                             <img
                               src={peerbotsLogo}
@@ -260,15 +240,14 @@ export default function Navbar() {
                           <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
                             <Menu.Item>
                               {({ active }) => (
-                                <Link to={`/u/${userInDb.id}`}>
-                                  <a
-                                    className={classNames(
-                                      active ? "" : "",
-                                      "block px-4 py-2 text-sm text-gray-700 hover:font-bold"
-                                    )}
-                                  >
-                                    My Profile
-                                  </a>
+                                <Link
+                                  to={`/u/${userInDb.id}`}
+                                  className={classNames(
+                                    active ? "" : "",
+                                    "block px-4 py-2 text-sm text-gray-700 hover:font-bold"
+                                  )}
+                                >
+                                  My Profile
                                 </Link>
                               )}
                             </Menu.Item>

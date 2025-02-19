@@ -1,7 +1,9 @@
-export default function TrustedStar({ content }) {
+import { Content } from "../types/content";
+
+export default function TrustedStar({ content }: { content: Content }) {
   return (
     <>
-      {content.trusted && (
+      {content.data.trusted && (
         <svg
           className="h-5 w-5 mx-2"
           width="16"

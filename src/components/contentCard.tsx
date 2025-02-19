@@ -2,7 +2,6 @@ import { Link } from "react-router";
 import SummaryRating from "./summaryRating";
 import TrustedStar from "./trustedStar";
 import { UserRecord } from "../types/user";
-import { firebaseDoc } from "../types/firebase_helper_types";
 import { Tag } from "../types/tag";
 import { Content } from "../types/content";
 import { Review } from "../types/review";
@@ -65,9 +64,7 @@ export default function ContentCard({
             {content.data.description}
           </p>
           <p className="font-bold text-dark-primary cursor-pointer">
-            <Link to={`/content/${content.id}`}>
-              <a>Read more...</a>
-            </Link>
+            <Link to={`/content/${content.id}`}>Read more...</Link>
           </p>
         </div>
         <div>
@@ -90,10 +87,11 @@ export default function ContentCard({
         {content.data.copyOf ? (
           <div className="text-center my-4 text-xs">
             This is a copy.{" "}
-            <Link to={`/content/${content.data.copyOf.id}`}>
-              <a className="underline decoration-primary text-primary hover:text-dark-primary hover:decoration-dark-primary font-bold">
-                View original.
-              </a>
+            <Link
+              className="underline decoration-primary text-primary hover:text-dark-primary hover:decoration-dark-primary font-bold"
+              to={`/content/${content.data.copyOf.id}`}
+            >
+              View original.
             </Link>
           </div>
         ) : (

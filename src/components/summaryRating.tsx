@@ -1,6 +1,7 @@
 import { Rating } from "@mui/material";
+import { Review } from "../types/review";
 
-export default function SummaryRating({ reviews }) {
+export default function SummaryRating({ reviews }: { reviews: Review[] }) {
   return (
     <>
       {reviews && reviews.length > 0 ? (
@@ -12,7 +13,9 @@ export default function SummaryRating({ reviews }) {
                   reviews.reduce((sum, { data }) => {
                     return sum + data.rating;
                   }, 0) / reviews.length
-                ).toFixed(2)
+                )
+                  .toFixed(2)
+                  .toString()
               }
               size="small"
               readOnly

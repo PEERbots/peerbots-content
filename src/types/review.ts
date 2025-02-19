@@ -1,4 +1,5 @@
 import { DocumentReference } from "firebase/firestore";
+import { UserRecord } from "./user";
 
 export type Review = {
   id: string;
@@ -6,6 +7,6 @@ export type Review = {
   data: {
     description: string;
     rating: number;
-    user: string;
+    user: string | UserRecord;
   };
 };
