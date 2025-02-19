@@ -15,6 +15,7 @@ import { useNavigate, useParams } from "react-router";
 import { useFirebaseAuth } from "../state/AuthProvider";
 import { UserRecord } from "../types/user";
 import { Content } from "../types/content";
+import profilePic from "../assets/profile_pic.png";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -42,7 +43,10 @@ export default function ProfilePage() {
       );
       const userData = await getDocs(usernameQuery);
       if (userData.docs.length > 0) {
-        const userInfoByUsername = userData.docs[0].data() as UserRecord;
+        const userInfoByUsername = {
+          id: userData.docs[0].id,
+          data: userData.docs[0].data(),
+        } as UserRecord;
         setUserInfo(userInfoByUsername);
         setUserId(userData.docs[0].id);
       } else {
@@ -50,7 +54,10 @@ export default function ProfilePage() {
         const userRef = doc(db, "users", username);
         const userDataByRef = await getDoc(userRef);
         if (userDataByRef.exists()) {
-          const userInfoById = userDataByRef.data() as UserRecord;
+          const userInfoById = {
+            id: userDataByRef.id,
+            data: userDataByRef.data(),
+          } as UserRecord;
           setUserInfo(userInfoById);
           setUserId(username);
         } else {
@@ -151,7 +158,9 @@ export default function ProfilePage() {
           <div className="bg-white shadow-md my-4 mx-2 p-8 rounded">
             <div className="mb-8">
               <img
-                src={userInfo.data.photoUrl}
+                src={
+                  userInfo.data.photoUrl ? userInfo.data.photoUrl : profilePic
+                }
                 className="rounded-full h-12 w-12 inline-block mr-4"
               />
               {userInfo.data.name}
