@@ -32,18 +32,22 @@ export default function MyPurchasesPage() {
       });
 
       // Get purchased content
-      const contentQuery = query(
-        collection(db, "content"),
-        where(documentId(), "in", purchasedContentIds)
-      );
-      const contentData = await getDocs(contentQuery);
-      const contentFromDb = contentData.docs.map((doc) => {
-        return {
-          id: doc.id,
-          data: doc.data(),
-        };
-      }) as Content[];
-      setPurchasedContent(contentFromDb);
+      if (purchasedContentIds.length > 0) {
+        const contentQuery = query(
+          collection(db, "content"),
+          where(documentId(), "in", purchasedContentIds)
+        );
+        const contentData = await getDocs(contentQuery);
+        const contentFromDb = contentData.docs.map((doc) => {
+          return {
+            id: doc.id,
+            data: doc.data(),
+          };
+        }) as Content[];
+        setPurchasedContent(contentFromDb);
+      } else {
+        setPurchasedContent([]);
+      }
     }
   };
 

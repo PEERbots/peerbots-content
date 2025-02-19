@@ -9,13 +9,9 @@ export default function SummaryRating({ reviews }: { reviews: Review[] }) {
           <div className="text-center">
             <Rating
               value={
-                +parseFloat(
-                  reviews.reduce((sum, { data }) => {
-                    return sum + data.rating;
-                  }, 0) / reviews.length
-                )
-                  .toFixed(2)
-                  .toString()
+                reviews.reduce((sum, { data }) => {
+                  return sum + data.rating;
+                }, 0) / reviews.length
               }
               size="small"
               readOnly

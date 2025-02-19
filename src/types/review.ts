@@ -1,12 +1,9 @@
-import { DocumentReference } from "firebase/firestore";
-import { UserRecord } from "./user";
-
 export type Review = {
   id: string;
-  content: string;
   data: {
+    contentId: string;
     description: string;
     rating: number;
-    user: string | UserRecord;
+    userId: string;
   };
 };

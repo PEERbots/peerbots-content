@@ -81,13 +81,10 @@ export default function ContentPage() {
       Object.keys(userInDb).length > 0
     ) {
       if (hasReview && userReview !== null && reviewDescriptionInput.current) {
-        const updatedReviewData = await updateDoc(
-          doc(db, "reviews", userReview.id),
-          {
-            rating: newUserReviewRating,
-            description: reviewDescriptionInput.current.value,
-          }
-        );
+        await updateDoc(doc(db, "reviews", userReview.id), {
+          rating: newUserReviewRating,
+          description: reviewDescriptionInput.current.value,
+        });
       } else {
         if (reviewDescriptionInput.current && contentId) {
           const newReview = {
@@ -96,10 +93,7 @@ export default function ContentPage() {
             rating: newUserReviewRating,
             description: reviewDescriptionInput.current.value,
           };
-          const addedReviewData = await addDoc(
-            collection(db, "reviews"),
-            newReview
-          );
+          await addDoc(collection(db, "reviews"), newReview);
         }
       }
       fetchUserReview();
@@ -129,7 +123,7 @@ export default function ContentPage() {
     }
   };
 
-  const listPublicly = async (e: FormEvent) => {
+  const listPublicly = async () => {
     if (contentAuthored && contentId) {
       const contentRef = doc(db, "content", contentId);
       await updateDoc(contentRef, { public: true, price: 0 });
@@ -160,7 +154,12 @@ export default function ContentPage() {
 
   const copyContent = async (e: FormEvent) => {
     e.preventDefault();
-    if (copyAsInput.current && contentInfo !== null && userInDb !== null) {
+    if (
+      contentId &&
+      copyAsInput.current &&
+      contentInfo !== null &&
+      userInDb !== null
+    ) {
       const contentName = copyAsInput.current.value;
       let newContent: ContentData = contentInfo.data;
       newContent.name = contentName;
@@ -177,6 +176,7 @@ export default function ContentPage() {
       );
 
       if (
+        contentId &&
         contentInfo.data.templatesInfo &&
         contentInfo.data.templatesInfo.length > 0
       ) {
@@ -198,7 +198,7 @@ export default function ContentPage() {
   };
 
   const checkContentOwned = async (content: Content) => {
-    if (userInDb && Object.keys(userInDb).length > 0) {
+    if (contentId && userInDb && Object.keys(userInDb).length > 0) {
       if (userInDb.id == content.data.owner.id) {
         setContentAuthored(true);
         setContentPurchased(false);
@@ -222,8 +222,12 @@ export default function ContentPage() {
   };
 
   const acquireContent = async () => {
-    if (!(contentAuthored || contentPurchased) && userInDb !== null) {
-      const data = await addDoc(collection(db, "sales"), {
+    if (
+      !(contentAuthored || contentPurchased) &&
+      userInDb !== null &&
+      contentId
+    ) {
+      await addDoc(collection(db, "sales"), {
         buyer: doc(db, "users", userInDb.id),
         content: doc(db, "content", contentId),
         datetime: Timestamp.now(),
@@ -233,7 +237,7 @@ export default function ContentPage() {
   };
 
   const fetchCopies = async () => {
-    if (userInDb !== null) {
+    if (userInDb !== null && contentId) {
       const copiesQuery = query(
         collection(db, "content"),
         where("owner", "==", doc(db, "users", userInDb.id)),
@@ -252,7 +256,9 @@ export default function ContentPage() {
 
   const fetchOriginal = async () => {
     if (contentInfo !== null && contentInfo.data.copyOf) {
-      const originalInDb = await getDoc(contentInfo.data.copyOf);
+      const originalInDb = await getDoc(
+        doc(db, "content", contentInfo.data.copyOf.id)
+      );
       setOriginal(originalInDb.data() as Content);
     }
   };
@@ -287,39 +293,49 @@ export default function ContentPage() {
   };
 
   const fetchReviews = async () => {
-    const contentRef = doc(db, "content", contentId);
-    const reviewsQuery = query(
-      collection(db, "reviews"),
-      where("content", "==", contentRef)
-    );
-    const reviewsData = await getDocs(reviewsQuery);
-    const reviewsFromDb = reviewsData.docs.map((doc) => {
-      return {
-        id: doc.id,
-        data: doc.data(),
-      };
-    }) as Review[];
-
-    const reviewersIds = reviewsFromDb.map((review) => review.data.user.id);
-    if (reviewersIds.length > 0) {
-      const reviewersQuery = query(
-        collection(db, "users"),
-        where(documentId(), "in", reviewersIds)
+    if (contentId) {
+      const contentRef = doc(db, "content", contentId);
+      const reviewsQuery = query(
+        collection(db, "reviews"),
+        where("content", "==", contentRef)
       );
-      const reviewersData = await getDocs(reviewersQuery);
-      const reviewersFromDb = reviewersData.docs.map((doc) => {
-        return { id: doc.id, data: doc.data() };
-      }) as UserRecord[];
-      setReviewers(reviewersFromDb);
-      setReviews(reviewsFromDb);
-    } else {
-      setReviewers([]);
-      setReviews([]);
+      const reviewsData = await getDocs(reviewsQuery);
+      const reviewsFromDb = reviewsData.docs.map((doc) => {
+        let d = doc.data();
+        return {
+          id: doc.id,
+          data: { ...d, userId: d.user.id, contentId: d.content.id },
+        };
+      }) as Review[];
+
+      console.log(reviewsFromDb);
+
+      const reviewersIds = reviewsFromDb.map((review) => review.data.userId);
+      if (reviewersIds.length > 0) {
+        const reviewersQuery = query(
+          collection(db, "users"),
+          where(documentId(), "in", reviewersIds)
+        );
+        const reviewersData = await getDocs(reviewersQuery);
+        const reviewersFromDb = reviewersData.docs.map((doc) => {
+          return { id: doc.id, data: doc.data() };
+        }) as UserRecord[];
+        setReviewers(reviewersFromDb);
+        setReviews(reviewsFromDb);
+      } else {
+        setReviewers([]);
+        setReviews([]);
+      }
     }
   };
 
   const fetchUserReview = async () => {
-    if (userInDb && Object.keys(userInDb).length > 0 && contentPurchased) {
+    if (
+      contentId &&
+      userInDb &&
+      Object.keys(userInDb).length > 0 &&
+      contentPurchased
+    ) {
       const userReviewQuery = query(
         collection(db, "reviews"),
         where("content", "==", doc(db, "content", contentId)),
@@ -340,13 +356,15 @@ export default function ContentPage() {
   };
 
   const fetchSalesCount = async () => {
-    const contentRef = doc(db, "content", contentId);
-    const salesQuery = query(
-      collection(db, "sales"),
-      where("content", "==", contentRef)
-    );
-    const salesData = await getDocs(salesQuery);
-    setSalesCount(salesData.docs.length);
+    if (contentId) {
+      const contentRef = doc(db, "content", contentId);
+      const salesQuery = query(
+        collection(db, "sales"),
+        where("content", "==", contentRef)
+      );
+      const salesData = await getDocs(salesQuery);
+      setSalesCount(salesData.docs.length);
+    }
   };
 
   // TODO: Figure out a way to structure data where it makes sense to give away this information
@@ -796,7 +814,7 @@ export default function ContentPage() {
                     New Rating:
                     <Rating
                       max={5}
-                      onChange={(e, value) => {
+                      onChange={(_, value) => {
                         if (value) {
                           setNewUserReviewRating(value);
                         }
@@ -806,7 +824,7 @@ export default function ContentPage() {
                   </div>
                   <div>
                     <label>Review:</label>
-                    {hasReview ? (
+                    {userReview && hasReview ? (
                       <input
                         type="input"
                         className="input-base"
@@ -855,7 +873,7 @@ export default function ContentPage() {
                           <img
                             src={
                               reviewers.filter((reviewer) => {
-                                return reviewer.id == review.data.user.id;
+                                return reviewer.id == review.data.userId;
                               })[0].data.photoUrl
                             }
                             className="rounded-full h-6 w-6 inline-block mr-1"
@@ -864,7 +882,7 @@ export default function ContentPage() {
                         <span className="text-sm">
                           {
                             reviewers.filter((reviewer) => {
-                              return reviewer.id == review.data.user.id;
+                              return reviewer.id == review.data.userId;
                             })[0].data.name
                           }
                         </span>

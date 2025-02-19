@@ -86,8 +86,12 @@ export default function ContentRow({
       const reviewsFromDb = reviewsData.docs.map((doc) => {
         const docData = doc.data();
         return {
-          content: docData.content.id,
-          data: docData,
+          id: doc.id,
+          data: {
+            ...docData,
+            userId: docData.user.id,
+            contentId: docData.content.id,
+          },
         };
       }) as Review[];
 
@@ -119,7 +123,7 @@ export default function ContentRow({
                   })[0]
                 }
                 reviews={reviews.filter((review) => {
-                  return review.content == eachContent.id;
+                  return review.data.contentId == eachContent.id;
                 })}
                 tags={
                   eachContent.data.tags

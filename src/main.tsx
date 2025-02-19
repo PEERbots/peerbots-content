@@ -10,6 +10,7 @@ import MyPurchasesPage from "./pages/my/MyPurchasesPage.tsx";
 import TagPage from "./pages/tag/TagPage.tsx";
 import ContentPage from "./pages/content/ContentPage.tsx";
 import NotFoundPage from "./pages/NotFoundPage.tsx";
+import SearchResults from "./pages/SearchResultsPage.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -17,6 +18,7 @@ createRoot(document.getElementById("root")!).render(
       <Routes>
         <Route element={<RootLayout />}>
           <Route index element={<HomePage />} path="/" />
+          <Route path="search" element={<SearchResults />} />
 
           <Route path="my">
             <Route path="content" element={<MyContentPage />} />

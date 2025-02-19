@@ -12,45 +12,54 @@ import ContentRow from "../components/contentRow";
 import algoliaApp from "../../algolia";
 import { db } from "../../firebase";
 import { useSearchParams } from "react-router";
+import { Content } from "../types/content";
 
 export default function SearchResults() {
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState<Content[]>([]);
   const [searchParams] = useSearchParams();
-  const q = searchParams.get("q");
-  const contentIndex = algoliaApp.initIndex("Content Index");
+  const queryFromUrl = searchParams.get("q");
 
   const fetchSearchResults = async () => {
-    if (q) {
-      const contentResults = await contentIndex.search(q);
-      const contentIds = contentResults.hits.map((contentHit) => {
-        return contentHit.objectID;
+    if (queryFromUrl) {
+      const contentResults = algoliaApp.search({
+        requests: [
+          {
+            indexName: "Content Index",
+            query: queryFromUrl,
+          },
+        ],
+      });
+      const contentIds = (await contentResults).results.map((result) => {
+        return result.facetHits;
       });
 
-      const q = query(
+      console.log(contentIds);
+
+      const firebaseQuery = query(
         collection(db, "content"),
         where("public", "==", true),
         where(documentId(), "in", contentIds.slice(0, 10)),
         limit(10)
       );
-      const data = await getDocs(q);
+      const data = await getDocs(firebaseQuery);
       const searchResultsFromDb = data.docs.map((doc) => {
         return {
           id: doc.id,
           data: doc.data(),
         };
-      });
+      }) as Content[];
       setSearchResults(searchResultsFromDb);
     }
   };
 
   useEffect(() => {
     fetchSearchResults();
-  }, [q]);
+  }, [queryFromUrl]);
 
   return (
     <ContentRow
       content={searchResults}
-      title={`Search results for &quot; ${q}`}
+      title={`Search results for ${queryFromUrl}`}
     />
   );
 }

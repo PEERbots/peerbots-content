@@ -13,20 +13,21 @@ import ContentRow from "../components/contentRow";
 import { db } from "../../firebase";
 import { useNavigate, useParams } from "react-router";
 import { useFirebaseAuth } from "../state/AuthProvider";
-import { firebaseDoc } from "../types/firebase_helper_types";
+import { UserRecord } from "../types/user";
+import { Content } from "../types/content";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { username } = useParams();
   const [userId, setUserId] = useState<string | null>(null);
-  const [userInfo, setUserInfo] = useState({});
-  const [content, setContent] = useState<firebaseDoc[]>([]);
+  const [userInfo, setUserInfo] = useState<UserRecord | null>(null);
+  const [content, setContent] = useState<Content[]>([]);
 
   const { user, userInDb } = useFirebaseAuth();
-  const [viewerIsAuthor, setViewerIsAuthor] = useState(false);
-  const [editingName, setEditingName] = useState(false);
-  const [editingDescription, setEditingDescription] = useState(false);
-  const [editingUsername, setEditingUsername] = useState(false);
+  const [viewerIsAuthor, setViewerIsAuthor] = useState<boolean>(false);
+  const [editingName, setEditingName] = useState<boolean>(false);
+  const [editingDescription, setEditingDescription] = useState<boolean>(false);
+  const [editingUsername, setEditingUsername] = useState<boolean>(false);
   const updateNameInput = useRef<HTMLInputElement>(null);
   const updateDescriptionInput = useRef<HTMLTextAreaElement>(null);
   const updateUsernameInput = useRef<HTMLInputElement>(null);
@@ -41,7 +42,7 @@ export default function ProfilePage() {
       );
       const userData = await getDocs(usernameQuery);
       if (userData.docs.length > 0) {
-        const userInfoByUsername = userData.docs[0].data();
+        const userInfoByUsername = userData.docs[0].data() as UserRecord;
         setUserInfo(userInfoByUsername);
         setUserId(userData.docs[0].id);
       } else {
@@ -49,7 +50,7 @@ export default function ProfilePage() {
         const userRef = doc(db, "users", username);
         const userDataByRef = await getDoc(userRef);
         if (userDataByRef.exists()) {
-          const userInfoById = userDataByRef.data();
+          const userInfoById = userDataByRef.data() as UserRecord;
           setUserInfo(userInfoById);
           setUserId(username);
         } else {
@@ -75,49 +76,55 @@ export default function ProfilePage() {
           id: doc.id,
           data: doc.data(),
         };
-      });
+      }) as Content[];
       setContent(contentFromDb);
     }
   };
 
   const updateName = async (e: FormEvent) => {
     e.preventDefault();
-    const userRef = doc(db, "users", userId);
-    await updateDoc(userRef, { name: updateNameInput.current.value });
-    setEditingName(false);
-    fetchUserDetails();
+    if (userId && updateNameInput.current) {
+      const userRef = doc(db, "users", userId);
+      await updateDoc(userRef, { name: updateNameInput.current.value });
+      setEditingName(false);
+      fetchUserDetails();
+    }
   };
 
-  const updateDescription = async (e) => {
+  const updateDescription = async (e: FormEvent) => {
     e.preventDefault();
-    const userRef = doc(db, "users", userId);
-    await updateDoc(userRef, {
-      description: updateDescriptionInput.current.value,
-    });
-    setEditingDescription(false);
-    fetchUserDetails();
-  };
-
-  const updateUsername = async (e) => {
-    e.preventDefault();
-    const newUsername = updateUsernameInput.current.value;
-    const usernameQuery = query(
-      collection(db, "users"),
-      where("username", "==", newUsername)
-    );
-    const usersWithUsername = await getDocs(usernameQuery);
-    if (usersWithUsername.docs.length > 0) {
-      setUsernameErrorMessage(
-        "Username is already taken. Try another one please."
-      );
-    } else {
+    if (userId && updateDescriptionInput.current) {
       const userRef = doc(db, "users", userId);
       await updateDoc(userRef, {
-        username: newUsername,
+        description: updateDescriptionInput.current.value,
       });
-      setEditingUsername(false);
-      setUsernameErrorMessage("");
+      setEditingDescription(false);
       fetchUserDetails();
+    }
+  };
+
+  const updateUsername = async (e: FormEvent) => {
+    e.preventDefault();
+    if (userId && updateUsernameInput.current) {
+      const newUsername = updateUsernameInput.current.value;
+      const usernameQuery = query(
+        collection(db, "users"),
+        where("username", "==", newUsername)
+      );
+      const usersWithUsername = await getDocs(usernameQuery);
+      if (usersWithUsername.docs.length > 0) {
+        setUsernameErrorMessage(
+          "Username is already taken. Try another one please."
+        );
+      } else {
+        const userRef = doc(db, "users", userId);
+        await updateDoc(userRef, {
+          username: newUsername,
+        });
+        setEditingUsername(false);
+        setUsernameErrorMessage("");
+        fetchUserDetails();
+      }
     }
   };
 
@@ -144,10 +151,10 @@ export default function ProfilePage() {
           <div className="bg-white shadow-md my-4 mx-2 p-8 rounded">
             <div className="mb-8">
               <img
-                src={userInfo.photoUrl}
+                src={userInfo.data.photoUrl}
                 className="rounded-full h-12 w-12 inline-block mr-4"
               />
-              {userInfo.name}
+              {userInfo.data.name}
               {user && viewerIsAuthor && (
                 <button
                   className="border border-gray-400 m-2 p-2 hover:bg-gray-400 hover:text-white rounded"
@@ -167,7 +174,7 @@ export default function ProfilePage() {
                 </button>
               )}
             </div>
-            {editingName && (
+            {userInDb && editingName && (
               <div>
                 <form onSubmit={updateName}>
                   <label>New Name</label>
@@ -197,7 +204,9 @@ export default function ProfilePage() {
               </div>
             )}
             <div>
-              {userInfo.description && <span>{userInfo.description}</span>}
+              {userInfo.data.description && (
+                <span>{userInfo.data.description}</span>
+              )}
               {user && viewerIsAuthor && (
                 <button
                   className="border border-gray-400 m-2 p-2 hover:bg-gray-400 hover:text-white rounded"
@@ -217,12 +226,11 @@ export default function ProfilePage() {
                 </button>
               )}
             </div>
-            {editingDescription && (
+            {userInDb && editingDescription && (
               <div>
                 <form onSubmit={updateDescription}>
                   <label>New Description</label>
                   <textarea
-                    type="text"
                     ref={updateDescriptionInput}
                     className="input-base form-input"
                     name="updatedDescription"
@@ -247,9 +255,9 @@ export default function ProfilePage() {
               </div>
             )}
             <div>
-              {user && viewerIsAuthor && userInfo.username && (
+              {user && viewerIsAuthor && userInfo.data.username && (
                 <span>
-                  Username: <span>{userInfo.username}</span>
+                  Username: <span>{userInfo.data.username}</span>
                 </span>
               )}
               {user && viewerIsAuthor && (
@@ -271,7 +279,7 @@ export default function ProfilePage() {
                 </button>
               )}
             </div>
-            {editingUsername && (
+            {userInDb && editingUsername && (
               <div>
                 <form onSubmit={updateUsername}>
                   <label>New username</label>
@@ -308,7 +316,7 @@ export default function ProfilePage() {
             <div>
               <ContentRow
                 content={content}
-                title={`Content authored by ${userInfo.name}`}
+                title={`Content authored by ${userInfo.data.name}`}
               ></ContentRow>
             </div>
           </div>
