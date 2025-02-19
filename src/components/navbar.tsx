@@ -187,11 +187,11 @@ export default function Navbar() {
                   <SearchForm />
                 </div>
                 {user ? (
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0 cursor-pointer">
                     {/* Profile dropdown */}
                     <Menu
                       as="div"
-                      className="border border-neutral-200 shadow-lg p-2 rounded-lg ml-3 relative"
+                      className="border border-neutral-200 shadow-lg p-2 rounded-lg ml-3 relative cursor-pointer"
                     >
                       <div className="flex items-center">
                         <Menu.Button className="flex items-center text-sm focus:outline-none">
@@ -199,13 +199,13 @@ export default function Navbar() {
                           <div className="h-8 w-8">
                             {user.photoURL ? (
                               <img
-                                className="rounded-full"
+                                className="rounded-full cursor-pointer"
                                 src={user.photoURL}
                                 alt="Your profile photo"
                               />
                             ) : (
                               <img
-                                className="rounded-full"
+                                className="rounded-full cursor-pointer"
                                 src={profilePic}
                                 alt="The default profile photo for everyone"
                               />
@@ -213,7 +213,7 @@ export default function Navbar() {
                           </div>
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4 stroke-gray-400 ml-2 md:block hidden"
+                            className="h-4 w-4 stroke-gray-400 ml-2 md:block hidden cursor-pointer"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"

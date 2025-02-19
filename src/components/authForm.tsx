@@ -151,8 +151,8 @@ export default function AuthForm({ mode }: { mode: boolean }) {
           )}
           {formMode == "signing in" && (
             <span>
-              Sign in to simplify connecting to robots, and synchronize your
-              work across devices.
+              Sign in to acquire, review, and list content for your social
+              robot.
             </span>
           )}
         </p>

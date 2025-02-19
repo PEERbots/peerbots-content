@@ -9,8 +9,10 @@ export default function CheckAuth({ children }: { children: ReactElement }) {
       {user ? (
         <>{children}</>
       ) : (
-        <div className="flex justify-center">
-          <h3>You need to sign in to see the contents of this page!</h3>
+        <div className="justify-center text-center">
+          <h3 className="block">
+            You need to sign in to see the contents of this page!
+          </h3>
           <AuthForm mode={false}></AuthForm>
         </div>
       )}

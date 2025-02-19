@@ -3,6 +3,7 @@
 @theme {
 
   --color-primary: #46D9D9;
+  --color-primary-fade: rgba(var(--color-primary), 0.05);
   --color-dark-primary: #5FC7CC;
   --color-secondary: #E86E8A; /* red */
   --color-accent: #D9E021; /* light-yellow */
@@ -14,11 +15,11 @@
 
 @layer components {
   .input-base {
-    @apply bg-primary opacity-5 border-0 border-b-2 border-gray-300 focus:border-gray-600 py-2 px-2;
+    @apply bg-primary-fade text-black border-b-2 border-gray-300 focus:border-gray-600 py-2 px-2;
   }
 
   .btn-primary {
-    @apply bg-primary hover:bg-dark-primary text-white font-bold py-2 px-4 my-2 mx-4 rounded disabled:bg-gray-400 disabled:hover:bg-gray-300 disabled:cursor-not-allowed;
+    @apply bg-primary hover:bg-dark-primary text-black font-bold py-2 px-4 my-2 mx-4 rounded disabled:bg-gray-400 disabled:hover:bg-gray-300 disabled:cursor-not-allowed;
   }
 }
 
