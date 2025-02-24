@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@theme {
+
+  --color-primary: #46D9D9;
+  --color-primary-fade: rgba(var(--color-primary), 0.05);
+  --color-dark-primary: #5FC7CC;
+  --color-secondary: #E86E8A; /* red */
+  --color-accent: #D9E021; /* light-yellow */
+  --color-accent-hc: #C4CC24; /* dark-yellow */
+  --color-accent-two: #4273FF; /* blue */
+  --color-accent-two-hc: #516EB5; /* dark blue */
+  --color-accent-three: #3F8588;
+  --color-danger: #E86E8A
+}
+
+@layer components {
+  .input-base {
+    @apply bg-primary-fade text-black border-b-2 border-gray-300 focus:border-gray-600 py-2 px-2;
+  }
+
+  .btn-primary {
+    @apply bg-primary hover:bg-dark-primary text-black font-bold py-2 px-4 my-2 mx-4 rounded disabled:bg-gray-400 disabled:hover:bg-gray-300 disabled:cursor-not-allowed cursor-pointer;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-100 hover:bg-gray-200 text-gray-600 font-normal py-1 px-2 my-1 mx-2 rounded-md disabled:bg-gray-400 disabled:hover:bg-gray-300 disabled:cursor-not-allowed cursor-pointer;
+  }
+
+  .btn-danger {
+    @apply bg-danger hover:opacity-80 text-white font-bold py-1 px-2 my-1 mx-2 rounded-md disabled:bg-gray-400 disabled:hover:bg-gray-300 disabled:cursor-not-allowed cursor-pointer;
+  }
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, Nunito, BlinkMacSystemFont, Segoe UI, Roboto,
+    Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  background: rgba(70, 217, 217, 0.05);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
