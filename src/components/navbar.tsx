@@ -1,4 +1,11 @@
-import { Disclosure, Menu, Transition } from "@headlessui/react";
+import {
+  DialogBackdrop,
+  DialogPanel,
+  DialogTitle,
+  Disclosure,
+  Menu,
+  Transition,
+} from "@headlessui/react";
 import { Fragment, useEffect, useState } from "react";
 import { collection, doc, getDocs, query, where } from "firebase/firestore";
 import { signOut } from "firebase/auth";
@@ -67,9 +74,13 @@ export default function Navbar() {
           onClose={() => setModalShown(false)}
           className="fixed z-10 inset-0 overflow-y-auto"
         >
-          <div className="block text-center items-end justify-center min-h-screen pt-20 px-4 sm:pt-4 md:m-10 sm:m-2">
+          <DialogPanel className="block text-center items-end justify-center min-h-screen pt-20 px-4 sm:pt-4 md:m-10 sm:m-2">
+            <DialogBackdrop
+              className={"fixed inset-0 bg-black/30"}
+              onClick={() => setModalShown(false)}
+            />
             <AuthForm mode={signingUp} />
-          </div>
+          </DialogPanel>
         </Dialog>
       </div>
       <Disclosure as="nav" className="">

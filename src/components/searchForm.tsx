@@ -27,7 +27,7 @@ export function SearchForm() {
           placeholder="Search for content"
         ></input>
         <button
-          className="bg-primary input-base border-2 border-l items-center"
+          className="bg-primary input-base border-2 border-l items-center cursor-pointer"
           type="submit"
         >
           <svg
