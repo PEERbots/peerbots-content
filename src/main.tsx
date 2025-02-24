@@ -16,8 +16,8 @@ import ErrorPage from "./pages/ErrorPage.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ErrorBoundary fallback={<ErrorPage />}>
-      <BrowserRouter>
+    <BrowserRouter>
+      <ErrorBoundary fallback={<ErrorPage />}>
         <Routes>
           <Route element={<RootLayout />}>
             <Route index element={<HomePage />} path="/" />
@@ -36,7 +36,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
-      </BrowserRouter>
-    </ErrorBoundary>
+      </ErrorBoundary>
+    </BrowserRouter>
   </StrictMode>
 );

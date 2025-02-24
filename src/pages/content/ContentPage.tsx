@@ -308,8 +308,6 @@ export default function ContentPage() {
         };
       }) as Review[];
 
-      console.log(reviewsFromDb);
-
       const reviewersIds = reviewsFromDb.map((review) => review.data.userId);
       if (reviewersIds.length > 0) {
         const reviewersQuery = query(
