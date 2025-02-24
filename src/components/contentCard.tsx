@@ -5,6 +5,7 @@ import { UserRecord } from "../types/user";
 import { Tag } from "../types/tag";
 import { Content } from "../types/content";
 import { Review } from "../types/review";
+import profilePic from "../assets/profile_pic.png";
 
 export default function ContentCard({
   content,
@@ -40,7 +41,7 @@ export default function ContentCard({
                     ></img>
                   ) : (
                     <img
-                      src="profile_pic.png"
+                      src={profilePic}
                       className="h-8 inline-block rounded-full cursor-pointer"
                     ></img>
                   )}

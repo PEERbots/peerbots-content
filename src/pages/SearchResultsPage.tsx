@@ -59,7 +59,7 @@ export default function SearchResults() {
   return (
     <ContentRow
       content={searchResults}
-      title={`Search results for ${queryFromUrl}`}
+      title={`Search results for '${queryFromUrl}'`}
     />
   );
 }
