@@ -17,21 +17,23 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route element={<RootLayout />} errorElement={<ErrorPage />}>
-          <Route index element={<HomePage />} path="/" />
-          <Route path="search" element={<SearchResults />} />
+        <Route element={<RootLayout />}>
+          <Route errorElement={<ErrorPage />}>
+            <Route index element={<HomePage />} path="/" />
+            <Route path="search" element={<SearchResults />} />
 
-          <Route path="my">
-            <Route path="content" element={<MyContentPage />} />
-            <Route path="listings" element={<MyListingsPage />} />
-            <Route path="purchases" element={<MyPurchasesPage />} />
+            <Route path="my">
+              <Route path="content" element={<MyContentPage />} />
+              <Route path="listings" element={<MyListingsPage />} />
+              <Route path="purchases" element={<MyPurchasesPage />} />
+            </Route>
+
+            <Route path="tag/:tagId" element={<TagPage />} />
+            <Route path="content/:contentId" element={<ContentPage />} />
+            <Route element={<ProfilePage />} path="u/:username" />
+
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
-
-          <Route path="tag/:tagId" element={<TagPage />} />
-          <Route path="content/:contentId" element={<ContentPage />} />
-          <Route element={<ProfilePage />} path="u/:username" />
-
-          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

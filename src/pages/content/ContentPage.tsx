@@ -755,21 +755,23 @@ export default function ContentPage() {
             )}
 
           {/* Link to original section */}
-          {contentInfo && contentInfo.data.copyOf && (
-            <div className="bg-white shadow-md my-4 mx-2 rounded p-8">
-              <div className="text-center">
-                This is a copy of
-                <div>
-                  <Link
-                    to={`/content/${contentInfo.data.copyOf.id}`}
-                    className="underline decoration-primary text-primary hover:text-dark-primary hover:decoration-dark-primary font-bold"
-                  >
-                    {original && original.data.name}
-                  </Link>
+          {contentInfo &&
+            contentInfo.data.copyOf &&
+            contentInfo.data.copyOf.id && (
+              <div className="bg-white shadow-md my-4 mx-2 rounded p-8">
+                <div className="text-center">
+                  This is a copy of
+                  <div>
+                    <Link
+                      to={`/content/${contentInfo.data.copyOf.id}`}
+                      className="underline decoration-primary text-primary hover:text-dark-primary hover:decoration-dark-primary font-bold"
+                    >
+                      {original && original.data.name}
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Copy this content section */}
           {user && contentInfo && (contentAuthored || contentPurchased) && (
