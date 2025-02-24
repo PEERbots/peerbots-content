@@ -11,7 +11,6 @@ import TagPage from "./pages/tag/TagPage.tsx";
 import ContentPage from "./pages/content/ContentPage.tsx";
 import NotFoundPage from "./pages/NotFoundPage.tsx";
 import SearchResults from "./pages/SearchResultsPage.tsx";
-import { ErrorBoundary } from "react-error-boundary";
 import ErrorPage from "./pages/ErrorPage.tsx";
 
 createRoot(document.getElementById("root")!).render(
