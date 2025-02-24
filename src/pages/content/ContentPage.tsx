@@ -259,7 +259,10 @@ export default function ContentPage() {
       const originalInDb = await getDoc(
         doc(db, "content", contentInfo.data.copyOf.id)
       );
-      setOriginal(originalInDb.data() as Content);
+      setOriginal({
+        id: originalInDb.id,
+        data: originalInDb.data(),
+      } as Content);
     }
   };
 
@@ -757,7 +760,9 @@ export default function ContentPage() {
           {/* Link to original section */}
           {contentInfo &&
             contentInfo.data.copyOf &&
-            contentInfo.data.copyOf.id && (
+            contentInfo.data.copyOf.id &&
+            original &&
+            original.data.name && (
               <div className="bg-white shadow-md my-4 mx-2 rounded p-8">
                 <div className="text-center">
                   This is a copy of
