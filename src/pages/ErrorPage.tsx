@@ -1,4 +1,3 @@
-import { Link } from "react-router";
 import peerbotBackpack from "../assets/peerbot-backpack.webp";
 
 export default function ErrorPage() {
@@ -12,9 +11,9 @@ export default function ErrorPage() {
         <div className="mb-2">Sorry, it looks like an error occured.</div>
         <div>
           Try going to the{" "}
-          <Link to="/" className="underline text-dark-primary">
+          <a href="/" className="underline text-dark-primary">
             home page
-          </Link>{" "}
+          </a>{" "}
           and starting over?
         </div>
       </div>
