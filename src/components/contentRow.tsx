@@ -51,7 +51,6 @@ export default function ContentRow({
       const tagsIds = content
         .filter((d) => d.data.tags)
         .map((doc) => {
-          console.log(doc);
           return doc.data.tags.flat().map((tag: Tag) => {
             return tag.id;
           });

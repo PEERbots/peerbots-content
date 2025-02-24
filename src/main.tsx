@@ -18,8 +18,8 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        <ErrorBoundary fallback={<ErrorPage />}>
-          <Route element={<RootLayout />}>
+        <Route element={<RootLayout />}>
+          <ErrorBoundary fallback={<ErrorPage />}>
             <Route index element={<HomePage />} path="/" />
             <Route path="search" element={<SearchResults />} />
 
@@ -34,8 +34,8 @@ createRoot(document.getElementById("root")!).render(
             <Route element={<ProfilePage />} path="u/:username" />
 
             <Route path="*" element={<NotFoundPage />} />
-          </Route>
-        </ErrorBoundary>
+          </ErrorBoundary>
+        </Route>
       </Routes>
     </BrowserRouter>
   </StrictMode>
