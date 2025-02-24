@@ -1,7 +1,6 @@
 import {
   DialogBackdrop,
   DialogPanel,
-  DialogTitle,
   Disclosure,
   Menu,
   Transition,
