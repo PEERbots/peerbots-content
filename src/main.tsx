@@ -11,28 +11,32 @@ import TagPage from "./pages/tag/TagPage.tsx";
 import ContentPage from "./pages/content/ContentPage.tsx";
 import NotFoundPage from "./pages/NotFoundPage.tsx";
 import SearchResults from "./pages/SearchResultsPage.tsx";
+import { ErrorBoundary } from "react-error-boundary";
+import ErrorPage from "./pages/ErrorPage.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
-      <Routes>
-        <Route element={<RootLayout />}>
-          <Route index element={<HomePage />} path="/" />
-          <Route path="search" element={<SearchResults />} />
+    <ErrorBoundary fallback={<ErrorPage />}>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<RootLayout />}>
+            <Route index element={<HomePage />} path="/" />
+            <Route path="search" element={<SearchResults />} />
 
-          <Route path="my">
-            <Route path="content" element={<MyContentPage />} />
-            <Route path="listings" element={<MyListingsPage />} />
-            <Route path="purchases" element={<MyPurchasesPage />} />
+            <Route path="my">
+              <Route path="content" element={<MyContentPage />} />
+              <Route path="listings" element={<MyListingsPage />} />
+              <Route path="purchases" element={<MyPurchasesPage />} />
+            </Route>
+
+            <Route path="tag/:tagId" element={<TagPage />} />
+            <Route path="content/:contentId" element={<ContentPage />} />
+            <Route element={<ProfilePage />} path="u/:username" />
+
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
-
-          <Route path="tag/:tagId" element={<TagPage />} />
-          <Route path="content/:contentId" element={<ContentPage />} />
-          <Route element={<ProfilePage />} path="u/:username" />
-
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
   </StrictMode>
 );
