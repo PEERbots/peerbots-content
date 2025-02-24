@@ -21,19 +21,17 @@ export default function SearchResults() {
 
   const fetchSearchResults = async () => {
     if (queryFromUrl) {
-      const contentResults = algoliaApp.search({
-        requests: [
-          {
-            indexName: "Content Index",
-            query: queryFromUrl,
-          },
-        ],
-      });
-      const contentIds = (await contentResults).results.map((result) => {
-        return result.facetHits;
+      const contentResults = await algoliaApp.searchSingleIndex({
+        indexName: "Content Index",
+        searchParams: {
+          query: queryFromUrl,
+          filters: "public:true",
+        },
       });
 
-      console.log(contentIds);
+      const contentIds = contentResults.hits.map((hit) => {
+        return hit.objectID;
+      });
 
       const firebaseQuery = query(
         collection(db, "content"),
@@ -57,9 +55,20 @@ export default function SearchResults() {
   }, [queryFromUrl]);
 
   return (
-    <ContentRow
-      content={searchResults}
-      title={`Search results for '${queryFromUrl}'`}
-    />
+    <>
+      {searchResults.length > 0 ? (
+        <ContentRow
+          content={searchResults}
+          title={`Search results for '${queryFromUrl}'`}
+        />
+      ) : (
+        <div className="bg-white shadow-md my-4 mx-2 p-8 rounded block">
+          <h3 className="text-xl font-bold">
+            Search results for {queryFromUrl}
+          </h3>
+          <div className="my-4">No results found</div>
+        </div>
+      )}
+    </>
   );
 }
