@@ -36,7 +36,9 @@ export default function Footer() {
             Robot Controller
           </a>
           <a
-            href="mailto:hello@peerbots.org"
+            href="https://peerbots.org/contact"
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-gray-300 hover:text-white transition-colors"
           >
             Contact

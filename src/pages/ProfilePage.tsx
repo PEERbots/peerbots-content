@@ -163,10 +163,15 @@ export default function ProfilePage() {
                   <Heading level={2} className="text-gray-900 font-bold">
                     {userInfo.data.name}
                   </Heading>
-                  {userInfo.data.username && (
-                    <Text size="sm" color="muted">
-                      @{userInfo.data.username}
-                    </Text>
+                  {viewerIsAuthor && userInfo.data.username && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <Text size="sm" color="muted">
+                        @{userInfo.data.username}
+                      </Text>
+                      <span className="text-[11px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md font-medium">
+                        Private (not visible to others)
+                      </span>
+                    </div>
                   )}
                 </div>
               </div>
@@ -233,14 +238,18 @@ export default function ProfilePage() {
             {/* Edit Username Form */}
             {userInDb && editingUsername && (
               <form onSubmit={updateUsername} className="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-xl">
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-                  New Username
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                  Private Username / Calling Handle
                 </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Used for Peerbots controller connections. This handle is private to your account and never displayed publicly.
+                </p>
                 <div className="flex gap-2 mb-2">
                   <input
                     type="text"
                     ref={updateUsernameInput}
                     defaultValue={userInDb.data.username}
+                    placeholder="Enter private handle"
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-peerbots-teal"
                   />
                   <Button color="primary" size="sm" type="submit">
