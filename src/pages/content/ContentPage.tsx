@@ -12,19 +12,20 @@ import {
   where,
 } from "firebase/firestore";
 import { FormEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router";
+import { Button, Heading, Text, Icon } from "@peerbots/core";
 
 import ContentRow from "../../components/contentRow";
-import { Link } from "react-router";
-import { Rating } from "@mui/material";
+import StarRating from "../../components/StarRating";
 import SummaryRating from "../../components/summaryRating";
 import TrustedStar from "../../components/trustedStar";
 import { db } from "../../../firebase";
-import { useNavigate, useParams } from "react-router";
 import { useFirebaseAuth } from "../../state/AuthProvider";
 import { Content, ContentData } from "../../types/content";
 import { UserRecord } from "../../types/user";
 import { Review } from "../../types/review";
 import { Tag } from "../../types/tag";
+import profilePic from "../../assets/profile_pic.png";
 
 export default function ContentPage() {
   const { user, userInDb } = useFirebaseAuth();
@@ -137,7 +138,7 @@ export default function ContentPage() {
       collection(db, "content", contentID, "templates")
     );
     const templatesInfo = contentTemplates.docs.map((eachTemplate) => {
-      let eachTemplatesData = eachTemplate.data();
+      const eachTemplatesData = eachTemplate.data();
       return {
         id: eachTemplate.id,
         title: eachTemplatesData.title,
@@ -161,14 +162,16 @@ export default function ContentPage() {
       userInDb !== null
     ) {
       const contentName = copyAsInput.current.value;
-      let newContent: ContentData = contentInfo.data;
-      newContent.name = contentName;
-      newContent.originalName = contentInfo.data.name;
-      newContent.copyOf = doc(db, "content", contentId);
-      newContent.copyDate = Timestamp.now();
-      newContent.public = false;
-      newContent.trusted = false;
-      newContent.owner = doc(db, "users", userInDb.id);
+      const newContent: ContentData = {
+        ...contentInfo.data,
+        name: contentName,
+        originalName: contentInfo.data.name,
+        copyOf: doc(db, "content", contentId),
+        copyDate: Timestamp.now(),
+        public: false,
+        trusted: false,
+        owner: doc(db, "users", userInDb.id),
+      };
 
       const newContentData = await addDoc(
         collection(db, "content"),
@@ -304,7 +307,7 @@ export default function ContentPage() {
       );
       const reviewsData = await getDocs(reviewsQuery);
       const reviewsFromDb = reviewsData.docs.map((doc) => {
-        let d = doc.data();
+        const d = doc.data();
         return {
           id: doc.id,
           data: { ...d, userId: d.user.id, contentId: d.content.id },
@@ -437,367 +440,321 @@ export default function ContentPage() {
       window.removeEventListener("resize", calculateIsDescriptionLong);
   }, [descriptionParagraph.current]);
 
+  const isFree = contentInfo?.data.price === 0 || !contentInfo?.data.price;
+  const canOpenInController =
+    (contentInfo?.data.public && isFree) || contentAuthored || contentPurchased;
+
   return (
-    <div>
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-        <div className="w-full col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4">
-          {/* Summary section */}
-          <div className="bg-white shadow-md my-4 mx-2 rounded p-8">
-            <div className="flex items-center">
-              <span className="text-2xl flex items-center">
-                {contentInfo && (
-                  <>
-                    {contentInfo.data.name}
-                    <TrustedStar content={contentInfo} />
-                  </>
-                )}
-              </span>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Details Column (2 cols on lg) */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Summary Card */}
+          <div className="bg-white border border-gray-200/80 rounded-2xl p-6 sm:p-8 shadow-xs">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-2 min-w-0">
+                <Heading level={2} className="text-gray-900 font-bold truncate">
+                  {contentInfo && contentInfo.data.name}
+                </Heading>
+                {contentInfo && <TrustedStar content={contentInfo} />}
+              </div>
+
               {user && contentAuthored && (
-                <button
-                  className="border border-gray-400 mx-2 p-2 hover:bg-gray-400 hover:text-white rounded"
-                  onClick={() => {
-                    setEditingName(true);
-                  }}
+                <Button
+                  variant="outline"
+                  color="neutral"
+                  size="sm"
+                  onClick={() => setEditingName(true)}
+                  className="flex items-center gap-1.5"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6 inline-block"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                  </svg>{" "}
-                  Edit
-                </button>
+                  <Icon name="pencilSquare" className="w-3.5 h-3.5" />
+                  <span>Edit Name</span>
+                </Button>
               )}
             </div>
+
             {editingName && contentInfo && (
-              <div>
-                <form onSubmit={updateName}>
-                  <label>New Name</label>
+              <form onSubmit={updateName} className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                  Edit Name
+                </label>
+                <div className="flex gap-2">
                   <input
                     type="text"
                     ref={updateNameInput}
-                    className="input-base form-input"
-                    name="updatedName"
                     defaultValue={contentInfo.data.name}
-                  ></input>
-                  <button
-                    className="btn-primary"
-                    type="submit"
-                    onClick={updateName}
-                  >
-                    {" "}
-                    Update Name
-                  </button>
-                  <button
-                    onClick={() => {
-                      setEditingName(false);
-                    }}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-peerbots-teal"
+                  />
+                  <Button color="primary" size="sm" type="submit">
+                    Save
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    color="neutral"
+                    size="sm"
+                    type="button"
+                    onClick={() => setEditingName(false)}
                   >
                     Cancel
-                  </button>
-                </form>
+                  </Button>
+                </div>
+              </form>
+            )}
+
+            {author && (
+              <div className="flex items-center gap-2 mb-4">
+                <Text size="xs" color="muted">
+                  Authored by
+                </Text>
+                <Link
+                  to={`/u/${author.id}`}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-900 hover:text-peerbots-darkteal"
+                >
+                  <img
+                    src={author.data.photoUrl || profilePic}
+                    alt={author.data.name || "Author"}
+                    className="h-6 w-6 rounded-full object-cover border border-gray-200"
+                  />
+                  <span>{author.data.name}</span>
+                </Link>
               </div>
             )}
-            <div>
-              <span className="text-xs">Authored by</span>
-              {author ? (
-                <div className="text-gray-800">
-                  <span>
-                    {author.data.photoUrl ? (
-                      <img
-                        src={author.data.photoUrl}
-                        className="h-8 inline-block rounded-full"
-                      ></img>
-                    ) : (
-                      <img
-                        src="profile_pic.png"
-                        className="h-8 inline-block rounded-full"
-                      ></img>
-                    )}
-                  </span>
-                  <span className="ml-1 text-base">{author.data.name}</span>
-                </div>
-              ) : (
-                <div></div>
-              )}
-            </div>
-            <div className="flex">
-              <div className="my-2">
-                {tags &&
-                  tags.map((eachTag) => (
-                    <Link key={eachTag.id} to={`/tag/${eachTag.id}`}>
-                      <span
-                        key={eachTag.id}
-                        style={{
-                          background: eachTag.data.color,
-                          color: eachTag.data.textColor,
-                        }}
-                        className="rounded-3xl px-2 mx-1 text-xs cursor-pointer"
-                      >
-                        {eachTag.data.name}
-                      </span>
-                    </Link>
-                  ))}
+
+            {tags && tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-2 border-t border-gray-100">
+                {tags.map((eachTag) => (
+                  <Link
+                    key={eachTag.id}
+                    to={`/tag/${eachTag.id}`}
+                    className="text-xs px-2.5 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-peerbots-teal/15 hover:text-peerbots-darkteal transition-colors"
+                  >
+                    {eachTag.data.name}
+                  </Link>
+                ))}
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Templates Section */}
+          {/* Included Templates Section */}
           {contentInfo &&
             contentInfo.data.templatesInfo &&
             contentInfo.data.templatesInfo.length > 0 && (
-              <div className="row-end-auto bg-white shadow-md my-4 mx-2 rounded p-8">
-                <h3 className="block text-xl mb-4">Included Templates</h3>
-                {contentInfo.data.templatesInfo.map((template) => {
-                  return (
+              <div className="bg-white border border-gray-200/80 rounded-2xl p-6 sm:p-8 shadow-xs">
+                <Heading level={4} className="mb-4 text-gray-900 font-bold">
+                  Included Templates ({contentInfo.data.templatesInfo.length})
+                </Heading>
+                <div className="flex flex-wrap gap-2">
+                  {contentInfo.data.templatesInfo.map((template) => (
                     <div
-                      className="border border-gray-400 mx-2 p-2 rounded inline-block"
                       key={template.id}
+                      className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-800 font-medium"
                     >
                       {template.title}
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
             )}
 
           {/* Description Section */}
-          <div className="row-end-auto bg-white shadow-md my-4 mx-2 rounded p-8">
-            <div>
+          <div className="bg-white border border-gray-200/80 rounded-2xl p-6 sm:p-8 shadow-xs">
+            <div className="flex items-center justify-between mb-4">
+              <Heading level={4} className="text-gray-900 font-bold">
+                Description
+              </Heading>
               {user && contentAuthored && (
-                <div className="mb-4">
-                  <h3 className="inline-block text-xl">Description</h3>
-                  <button
-                    className="border border-gray-400 mx-2 p-2 hover:bg-gray-400 hover:text-white rounded"
-                    onClick={() => {
-                      setEditingDescription(true);
-                    }}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6 inline-block"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                    </svg>{" "}
-                    Edit
-                  </button>
-                </div>
-              )}
-              {editingDescription && contentInfo && (
-                <div>
-                  <form onSubmit={updateDescription}>
-                    <label>New Description</label>
-                    <textarea
-                      ref={updateDescriptionInput}
-                      className="input-base form-input"
-                      name="updatedDescription"
-                      defaultValue={contentInfo.data.description}
-                    ></textarea>
-                    <button
-                      className="btn-primary"
-                      type="submit"
-                      onClick={updateDescription}
-                    >
-                      {" "}
-                      Update Description
-                    </button>
-                    <button
-                      onClick={() => {
-                        setEditingDescription(false);
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </form>
-                </div>
-              )}
-              <p
-                className={`${
-                  isDescriptionExpanded ? "line-clamp-none" : "line-clamp-5"
-                } `}
-                ref={descriptionParagraph}
-              >
-                {contentInfo && contentInfo.data.description}
-              </p>
-              {isDescriptionLong && !isDescriptionExpanded && (
-                <p className="font-bold text-dark-primary cursor-pointer">
-                  <a
-                    onClick={() => {
-                      setIsDescriptionExpanded(true);
-                    }}
-                  >
-                    Read more...
-                  </a>
-                </p>
+                <Button
+                  variant="outline"
+                  color="neutral"
+                  size="sm"
+                  onClick={() => setEditingDescription(true)}
+                  className="flex items-center gap-1.5"
+                >
+                  <Icon name="pencilSquare" className="w-3.5 h-3.5" />
+                  <span>Edit Description</span>
+                </Button>
               )}
             </div>
+
+            {editingDescription && contentInfo && (
+              <form onSubmit={updateDescription} className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                  Edit Description
+                </label>
+                <textarea
+                  ref={updateDescriptionInput}
+                  defaultValue={contentInfo.data.description}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-peerbots-teal mb-3"
+                />
+                <div className="flex gap-2">
+                  <Button color="primary" size="sm" type="submit">
+                    Save Description
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    color="neutral"
+                    size="sm"
+                    type="button"
+                    onClick={() => setEditingDescription(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            )}
+
+            <p
+              ref={descriptionParagraph}
+              className={`text-gray-700 text-sm leading-relaxed whitespace-pre-line ${
+                isDescriptionExpanded ? "line-clamp-none" : "line-clamp-5"
+              }`}
+            >
+              {contentInfo?.data.description || "No description provided."}
+            </p>
+            {isDescriptionLong && !isDescriptionExpanded && (
+              <button
+                type="button"
+                onClick={() => setIsDescriptionExpanded(true)}
+                className="mt-2 text-sm font-semibold text-peerbots-darkteal hover:underline cursor-pointer"
+              >
+                Read more...
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="col-span-1">
-          {/* Public Listing Section */}
+        {/* Sidebar Column (1 col on lg) */}
+        <div className="space-y-6">
+          {/* Main Action & Pricing Card */}
+          <div className="bg-white border border-gray-200/80 rounded-2xl p-6 sm:p-8 shadow-xs text-center space-y-4">
+            <div>
+              <Text size="xs" color="muted" className="uppercase tracking-wider font-semibold mb-1">
+                Pricing
+              </Text>
+              {isFree ? (
+                <span className="text-3xl font-extrabold text-emerald-600 uppercase">
+                  Free
+                </span>
+              ) : (
+                <span className="text-3xl font-extrabold text-gray-900">
+                  {contentInfo?.data.price &&
+                    new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "USD",
+                    }).format(contentInfo.data.price)}
+                </span>
+              )}
+            </div>
+
+            {/* Launch directly in Peerbots Controller */}
+            {canOpenInController && contentId && (
+              <div className="pt-2">
+                <a
+                  href={`https://app.peerbots.org/dash/control?importMarketplaceContent=${contentId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full inline-block"
+                >
+                  <Button
+                    color="teal"
+                    size="lg"
+                    radius="pill"
+                    className="w-full flex items-center justify-center gap-2 font-bold shadow-sm"
+                  >
+                    <span>Open in Peerbots App</span>
+                    <Icon name="externalLink" className="w-4 h-4" />
+                  </Button>
+                </a>
+                <Text size="xs" color="muted" className="mt-2">
+                  Loads this template straight into the controller
+                </Text>
+              </div>
+            )}
+
+            {/* Acquire Paid / Non-authored Content */}
+            {!contentAuthored && !contentPurchased && !isFree && (
+              <div>
+                {user ? (
+                  <Button
+                    color="primary"
+                    size="lg"
+                    onClick={acquireContent}
+                    className="w-full font-bold"
+                  >
+                    + Acquire Content
+                  </Button>
+                ) : (
+                  <div className="space-y-2">
+                    <Text size="xs" color="muted">
+                      Sign in to acquire this item
+                    </Text>
+                    <Button color="primary" size="lg" disabled className="w-full">
+                      + Acquire Content
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Sales & Ratings Meta */}
+            <div className="pt-4 border-t border-gray-100 flex items-center justify-around text-xs text-gray-500">
+              {salesCount !== null && (
+                <span>{salesCount} {salesCount === 1 ? "acquisition" : "acquisitions"}</span>
+              )}
+              {reviews.length > 0 && <SummaryRating reviews={reviews} />}
+            </div>
+          </div>
+
+          {/* Copy to App Section */}
+          {user && contentInfo && (contentAuthored || contentPurchased) && (
+            <div className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-xs text-center">
+              <Heading level={4} className="mb-3 text-gray-900 font-bold">
+                Duplicate for Personal Edits
+              </Heading>
+              <form onSubmit={copyContent} className="space-y-3">
+                <input
+                  type="text"
+                  ref={copyAsInput}
+                  defaultValue={`Copy of ${contentInfo.data.name}`}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-peerbots-teal"
+                />
+                <Button color="neutral" variant="outline" size="sm" type="submit" className="w-full">
+                  Create Personal Copy
+                </Button>
+              </form>
+            </div>
+          )}
+
+          {/* Publish Section for Authors */}
           {user &&
             contentAuthored &&
             contentInfo &&
             !contentInfo.data.copyOf &&
             !contentInfo.data.public && (
-              <div className="bg-white shadow-md my-4 mx-2 rounded p-8 text-center">
-                <div className="text-sm mb-2">
-                  Listing content will make it publicly available to others for
-                  free! Listing content publicly will allow others to copy it
-                  and use it on the Peerbots app.{" "}
-                </div>
-                <div className="text-sm font-bold mb-2">
-                  Once content is public it can not be made private.
-                </div>
-                <div className="mt-2">
-                  <button className="btn-primary" onClick={listPublicly}>
-                    List this publicly for free!
-                  </button>
-                </div>
+              <div className="bg-white border border-amber-200 rounded-2xl p-6 shadow-xs text-center space-y-3">
+                <Heading level={4} className="text-gray-900 font-bold">
+                  Publish to Marketplace
+                </Heading>
+                <Text size="xs" color="muted">
+                  Listing content makes it publicly available for free so other users can discover and use it. Once public, it cannot be made private.
+                </Text>
+                <Button color="primary" size="md" onClick={listPublicly} className="w-full">
+                  Publish for Free
+                </Button>
               </div>
             )}
 
-          {/* Acquisition or Statistics Section */}
-          {contentInfo &&
-            contentInfo.data.public &&
-            !contentInfo.data.copyOf && (
-              <div className="bg-white shadow-md my-4 mx-2 rounded p-8 text-center">
-                <div className="text-center">
-                  <div className="text-sm mb-2">
-                    This content is available for
-                  </div>
-                  {contentInfo.data.price == 0 ? (
-                    <span className="uppercase text-2xl text-green-700 font-bold">
-                      Free
-                    </span>
-                  ) : (
-                    <span className="text-2xl text-accent-two font-bold">
-                      {contentInfo.data.price &&
-                        new Intl.NumberFormat("en-US", {
-                          style: "currency",
-                          currency: "USD",
-                        }).format(contentInfo.data.price)}
-                    </span>
-                  )}
-                </div>
-
-                {user ? (
-                  <>
-                    {!(contentAuthored || contentPurchased) && (
-                      <div>
-                        <button
-                          className="btn-primary mt-4"
-                          onClick={() => {
-                            acquireContent();
-                          }}
-                        >
-                          + Acquire
-                        </button>{" "}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="mt-2">
-                    <span className="text-sm">
-                      You must sign in to acquire content.
-                    </span>
-                    <button className="btn-primary" disabled>
-                      + Acquire
-                    </button>
-                  </div>
-                )}
-
-                {/* Sales, Copies and Rating */}
-                <div className="text-center my-2 mt-8">
-                  <span className="mr-2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 inline-block mr-1"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                      />
-                    </svg>
-                    {salesCount} sales{" "}
-                  </span>
-                  {/* <span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 inline-block mr-1"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
-                    />
-                  </svg>
-                  {copiesCount} copies
-                </span> */}
-                </div>
-                <div className="text-center">
-                  {!contentInfo.data.copyOf &&
-                    contentInfo.data.public &&
-                    reviews && <SummaryRating reviews={reviews} />}
-                </div>
-              </div>
-            )}
-
-          {/* Link to original section */}
-          {contentInfo &&
-            contentInfo.data.copyOf &&
-            contentInfo.data.copyOf.id &&
-            original &&
-            original.data.name && (
-              <div className="bg-white shadow-md my-4 mx-2 rounded p-8">
-                <div className="text-center">
-                  This is a copy of
-                  <div>
-                    <Link
-                      to={`/content/${contentInfo.data.copyOf.id}`}
-                      className="underline decoration-primary text-primary hover:text-dark-primary hover:decoration-dark-primary font-bold"
-                    >
-                      {original && original.data.name}
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            )}
-
-          {/* Copy this content section */}
-          {user && contentInfo && (contentAuthored || contentPurchased) && (
-            <div className="bg-white shadow-md my-4 mx-2 rounded p-8 text-center">
-              <form onSubmit={copyContent}>
-                <label className="block mb-2">Copy As</label>
-                <input
-                  type="text"
-                  ref={copyAsInput}
-                  className="input-base form-input w-full text-gray-700"
-                  name="copyAs"
-                  defaultValue={`Copy of ${contentInfo.data.name}`}
-                ></input>
-                <button
-                  className="btn-primary mt-4"
-                  type="submit"
-                  onClick={copyContent}
-                >
-                  Copy to App!
-                </button>
-              </form>
+          {/* Copy Origin Reference */}
+          {contentInfo?.data.copyOf && original && (
+            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-center text-xs text-gray-600">
+              <span>This interaction is adapted from </span>
+              <Link
+                to={`/content/${contentInfo.data.copyOf.id}`}
+                className="font-bold text-peerbots-darkteal hover:underline"
+              >
+                {original.data.name}
+              </Link>
             </div>
           )}
         </div>
@@ -805,113 +762,91 @@ export default function ContentPage() {
 
       {/* Reviews Section */}
       {contentInfo && contentInfo.data.public && !contentInfo.data.copyOf && (
-        <div className="bg-white shadow-md my-4 mx-2 rounded p-8">
-          <div className="mb-6">
-            {user && contentPurchased && (
-              <div className="bg-white rounded my-4">
-                {hasReview ? (
-                  <span className="font-bold">Update your review</span>
-                ) : (
-                  <span className="font-bold">Write a review</span>
-                )}
-                <form onSubmit={updateReview}>
-                  <div>
-                    New Rating:
-                    <Rating
-                      max={5}
-                      onChange={(_, value) => {
-                        if (value) {
-                          setNewUserReviewRating(value);
-                        }
-                      }}
-                      className="p-4"
-                    />
-                  </div>
-                  <div>
-                    <label>Review:</label>
-                    {userReview && hasReview ? (
-                      <input
-                        type="input"
-                        className="input-base"
-                        ref={reviewDescriptionInput}
-                        placeholder="Review Details"
-                        defaultValue={userReview.data.description}
-                      />
-                    ) : (
-                      <input
-                        type="input"
-                        className="input-base"
-                        ref={reviewDescriptionInput}
-                        placeholder="Review Details"
-                      />
-                    )}
-                    <button className="btn-primary" type="submit">
-                      Submit Review
-                    </button>
-                  </div>
-                </form>
+        <div className="bg-white border border-gray-200/80 rounded-2xl p-6 sm:p-8 shadow-xs">
+          <div className="flex items-center justify-between mb-6">
+            <Heading level={3} className="text-gray-900 font-bold">
+              Reviews & Ratings ({reviews.length})
+            </Heading>
+          </div>
+
+          {/* Review Submission Form */}
+          {user && contentPurchased && (
+            <form onSubmit={updateReview} className="mb-8 p-5 bg-gray-50 border border-gray-200 rounded-xl space-y-4">
+              <Heading level={4} className="text-gray-900 font-bold">
+                {hasReview ? "Update Your Review" : "Write a Review"}
+              </Heading>
+
+              <div className="flex items-center gap-3">
+                <Text size="sm" className="font-semibold text-gray-700">
+                  Your Rating:
+                </Text>
+                <StarRating
+                  value={newUserReviewRating}
+                  onChange={(rating) => setNewUserReviewRating(rating)}
+                  size="md"
+                />
               </div>
-            )}
-            <h3 className="text-xl">Reviews</h3>
-            <div className="grid  grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-4 lg:gap-6">
-              {reviews.length == 0 && (
-                <div className="p-4 m-4">No reviews yet</div>
-              )}
-              {reviews.length > 0 &&
-                reviews.map((review) => (
+
+              <div>
+                <input
+                  type="text"
+                  ref={reviewDescriptionInput}
+                  defaultValue={userReview?.data?.description || ""}
+                  placeholder="Share your thoughts on this content..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-peerbots-teal"
+                />
+              </div>
+
+              <Button color="primary" size="sm" type="submit">
+                {hasReview ? "Update Review" : "Submit Review"}
+              </Button>
+            </form>
+          )}
+
+          {/* Review Cards Grid */}
+          {reviews.length === 0 ? (
+            <Text size="sm" color="muted">
+              No reviews yet. Be the first to share your experience!
+            </Text>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {reviews.map((review) => {
+                const reviewer = reviewers.find((r) => r.id === review.data.userId);
+                return (
                   <div
                     key={review.id}
-                    className="bg-white shadow-lg rounded p-4 w-64 mx-auto"
+                    className="p-4 bg-gray-50 border border-gray-200 rounded-xl flex flex-col justify-between gap-3"
                   >
-                    <div className="flex justify-between mb-2">
-                      <div>
-                        <Rating
-                          value={review.data.rating}
-                          max={5}
-                          readOnly
-                          size="small"
-                        />
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <StarRating value={review.data.rating} readOnly size="sm" />
+                        {reviewer && (
+                          <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
+                            <img
+                              src={reviewer.data.photoUrl || profilePic}
+                              alt={reviewer.data.name || "Reviewer"}
+                              className="w-5 h-5 rounded-full object-cover"
+                            />
+                            <span>{reviewer.data.name}</span>
+                          </div>
+                        )}
                       </div>
-
-                      <div className="align-middle">
-                        <span>
-                          <img
-                            src={
-                              reviewers.filter((reviewer) => {
-                                return reviewer.id == review.data.userId;
-                              })[0].data.photoUrl
-                            }
-                            className="rounded-full h-6 w-6 inline-block mr-1"
-                          ></img>
-                        </span>
-                        <span className="text-sm">
-                          {
-                            reviewers.filter((reviewer) => {
-                              return reviewer.id == review.data.userId;
-                            })[0].data.name
-                          }
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-sm text-gray-700">
-                      {review.data.description}
+                      <Text size="sm" className="text-gray-800">
+                        {review.data.description}
+                      </Text>
                     </div>
                   </div>
-                ))}
+                );
+              })}
             </div>
-          </div>
+          )}
         </div>
       )}
-      {/* Copies Section */}
-      <div>
-        {copies.length > 0 ? (
-          <div>
-            <ContentRow content={copies} title="Your copies" />
-          </div>
-        ) : (
-          <div>{""}</div>
-        )}
-      </div>
+
+      {/* User's Copies of this Content */}
+      {copies.length > 0 && (
+        <ContentRow content={copies} title="Your Saved Copies of this Template" />
+      )}
     </div>
   );
 }

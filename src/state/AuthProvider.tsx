@@ -56,7 +56,7 @@ export const FirebaseAuthProvider = ({
   };
   useEffect(() => {
     const unlisten = onAuthStateChanged(auth, (user) => {
-      user ? setUser(user) : setUser(null);
+      setUser(user ?? null);
     });
     return () => {
       unlisten();

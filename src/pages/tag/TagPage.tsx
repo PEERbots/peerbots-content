@@ -7,10 +7,11 @@ import {
   where,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
+import { Heading, Text } from "@peerbots/core";
 
 import ContentRow from "../../components/contentRow";
 import { db } from "../../../firebase";
-import { useNavigate, useParams } from "react-router";
 import { Content } from "../../types/content";
 import { Tag } from "../../types/tag";
 
@@ -29,12 +30,10 @@ export default function TagPage() {
         where("public", "==", true)
       );
       const contentData = await getDocs(contentQuery);
-      const contentFromDb = contentData.docs.map((doc) => {
-        return {
-          id: doc.id,
-          data: doc.data(),
-        };
-      }) as Content[];
+      const contentFromDb = contentData.docs.map((doc) => ({
+        id: doc.id,
+        data: doc.data(),
+      })) as Content[];
       setContent(contentFromDb);
     }
   };
@@ -64,36 +63,40 @@ export default function TagPage() {
   }, [tagId]);
 
   return (
-    <div>
+    <div className="py-4">
       {tagInfo && tagInfo.data ? (
-        <>
-          <div className="bg-white shadow-md my-4 mx-2 p-8">
-            <h1 className="text-2xl mb-4">
-              Tag:{" "}
-              <span
-                className="rounded-3xl px-2 mx-1"
-                style={{
-                  background: tagInfo.data.color,
-                  color: tagInfo.data.textColor,
-                }}
-              >
-                {tagInfo.data.name}
+        <div className="space-y-6">
+          <div className="bg-white border border-gray-200/80 rounded-2xl p-6 sm:p-8 shadow-xs">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs uppercase font-semibold text-gray-400 tracking-wider">
+                Category
               </span>
-            </h1>
-            <p>{tagInfo.data.description}</p>
-          </div>
-          <div>
-            {content ? (
-              <div>
-                <ContentRow content={content} />
-              </div>
-            ) : (
-              <div>No content found for the tag: {tagInfo.data.name}</div>
+            </div>
+            <Heading level={2} className="text-gray-900 font-bold mb-2">
+              {tagInfo.data.name}
+            </Heading>
+            {tagInfo.data.description && (
+              <Text size="md" color="muted">
+                {tagInfo.data.description}
+              </Text>
             )}
           </div>
-        </>
+
+          <div>
+            {content.length > 0 ? (
+              <ContentRow
+                content={content}
+                title={`Interactions tagged with "${tagInfo.data.name}"`}
+              />
+            ) : (
+              <div className="py-8 text-center text-gray-500">
+                No templates found for this tag yet.
+              </div>
+            )}
+          </div>
+        </div>
       ) : (
-        <div>No tag found for tag ID: {tagId}</div>
+        <div className="py-12 text-center text-gray-500">Loading tag...</div>
       )}
     </div>
   );
