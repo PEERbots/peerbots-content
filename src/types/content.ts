@@ -18,5 +18,5 @@ export type ContentData = {
   tags: Tag[];
   public?: boolean;
   trusted?: boolean;
-  templatesInfo?: { id: string; title: string }[];
+  templatesInfo?: { id: string; title: string; description?: string }[];
 };

@@ -11,10 +11,11 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { FormEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { Button, Heading, Text, Icon } from "@peerbots/core";
+import { Button, Heading, Text, Icon, Dialog } from "@peerbots/core";
 
+import AuthForm from "../../components/authForm";
 import ContentRow from "../../components/contentRow";
 import StarRating from "../../components/StarRating";
 import SummaryRating from "../../components/summaryRating";
@@ -29,6 +30,8 @@ import profilePic from "../../assets/profile_pic.png";
 
 export default function ContentPage() {
   const { user, userInDb } = useFirebaseAuth();
+
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   const [contentInfo, setContentInfo] = useState<Content | null>(null);
   const [author, setAuthor] = useState<UserRecord | null>(null);
@@ -62,17 +65,6 @@ export default function ContentPage() {
 
   const navigate = useNavigate();
   const { contentId } = useParams();
-
-  function calculateIsDescriptionLong() {
-    // https://stackoverflow.com/questions/52169520/how-can-i-check-whether-line-clamp-is-enabled
-    if (descriptionParagraph.current) {
-      const sh = descriptionParagraph.current.scrollHeight;
-      const ch = descriptionParagraph.current.clientHeight;
-      if (sh > 0 && ch > 0) {
-        setIsDescriptionLong(sh > ch);
-      }
-    }
-  }
 
   const updateReview = async (e: FormEvent) => {
     e.preventDefault();
@@ -433,16 +425,31 @@ export default function ContentPage() {
     fetchUserReview();
   }, [userInDb, contentPurchased]);
 
-  useLayoutEffect(() => {
-    calculateIsDescriptionLong();
-    window.addEventListener("resize", calculateIsDescriptionLong);
-    return () =>
-      window.removeEventListener("resize", calculateIsDescriptionLong);
-  }, [descriptionParagraph.current]);
+  useEffect(() => {
+    if (!contentInfo?.data?.description) {
+      setIsDescriptionLong(false);
+      return;
+    }
+
+    const checkHeight = () => {
+      if (descriptionParagraph.current && !isDescriptionExpanded) {
+        const sh = descriptionParagraph.current.scrollHeight;
+        const ch = descriptionParagraph.current.clientHeight;
+        if (sh > 0 && ch > 0) {
+          setIsDescriptionLong(sh > ch + 2);
+        }
+      }
+    };
+
+    const timer = setTimeout(checkHeight, 50);
+    window.addEventListener("resize", checkHeight);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", checkHeight);
+    };
+  }, [contentInfo?.data?.description, isDescriptionExpanded]);
 
   const isFree = contentInfo?.data.price === 0 || !contentInfo?.data.price;
-  const canOpenInController =
-    (contentInfo?.data.public && isFree) || contentAuthored || contentPurchased;
 
   return (
     <div className="space-y-6">
@@ -540,17 +547,39 @@ export default function ContentPage() {
             contentInfo.data.templatesInfo &&
             contentInfo.data.templatesInfo.length > 0 && (
               <div className="bg-white border border-gray-200/80 rounded-2xl p-6 sm:p-8 shadow-xs">
-                <Heading level={4} className="mb-4 text-gray-900 font-bold">
-                  Included Templates ({contentInfo.data.templatesInfo.length})
-                </Heading>
-                <div className="flex flex-wrap gap-2">
+                <div className="mb-4">
+                  <Heading level={4} className="text-gray-900 font-bold">
+                    Included Templates ({contentInfo.data.templatesInfo.length})
+                  </Heading>
+                  <Text size="xs" color="muted" className="mt-1">
+                    Click any template to launch and test it directly in the Peerbots Robot Controller.
+                  </Text>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {contentInfo.data.templatesInfo.map((template) => (
-                    <div
+                    <a
                       key={template.id}
-                      className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-800 font-medium"
+                      href={`https://app.peerbots.org/dash/control?importMarketplaceContent=${contentId}&templateId=${template.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-4 bg-gray-50 hover:bg-peerbots-teal/5 border border-gray-200 hover:border-peerbots-teal/40 rounded-xl transition-all group flex items-center justify-between gap-3 cursor-pointer shadow-2xs hover:shadow-xs"
+                      title={`Open "${template.title}" in Peerbots App`}
                     >
-                      {template.title}
-                    </div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-gray-900 group-hover:text-peerbots-darkteal text-sm truncate flex items-center gap-1.5">
+                          <span>{template.title}</span>
+                        </div>
+                        {template.description && (
+                          <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">
+                            {template.description}
+                          </p>
+                        )}
+                      </div>
+                      <div className="shrink-0 flex items-center gap-1.5 text-xs font-semibold text-peerbots-teal group-hover:text-peerbots-darkteal">
+                        <span className="hidden sm:inline">Open in App</span>
+                        <Icon name="externalLink" className="w-3.5 h-3.5" />
+                      </div>
+                    </a>
                   ))}
                 </div>
               </div>
@@ -604,23 +633,28 @@ export default function ContentPage() {
               </form>
             )}
 
-            <p
-              ref={descriptionParagraph}
-              className={`text-gray-700 text-sm leading-relaxed whitespace-pre-line ${
-                isDescriptionExpanded ? "line-clamp-none" : "line-clamp-5"
-              }`}
-            >
-              {contentInfo?.data.description || "No description provided."}
-            </p>
-            {isDescriptionLong && !isDescriptionExpanded && (
-              <button
-                type="button"
-                onClick={() => setIsDescriptionExpanded(true)}
-                className="mt-2 text-sm font-semibold text-peerbots-darkteal hover:underline cursor-pointer"
+            <div className="relative">
+              <p
+                ref={descriptionParagraph}
+                className={`text-gray-700 text-sm leading-relaxed whitespace-pre-line ${
+                  isDescriptionExpanded ? "" : "line-clamp-5"
+                }`}
               >
-                Read more...
-              </button>
-            )}
+                {contentInfo?.data.description || "No description provided."}
+              </p>
+              {(isDescriptionLong ||
+                (contentInfo?.data.description &&
+                  (contentInfo.data.description.length > 250 ||
+                    contentInfo.data.description.split("\n").length > 4))) && (
+                <button
+                  type="button"
+                  onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                  className="mt-2 text-sm font-semibold text-peerbots-darkteal hover:underline cursor-pointer inline-flex items-center gap-1"
+                >
+                  {isDescriptionExpanded ? "Show less" : "Read more..."}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -647,53 +681,45 @@ export default function ContentPage() {
               )}
             </div>
 
-            {/* Launch directly in Peerbots Controller */}
-            {canOpenInController && contentId && (
-              <div className="pt-2">
-                <a
-                  href={`https://app.peerbots.org/dash/control?importMarketplaceContent=${contentId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full inline-block"
-                >
-                  <Button
-                    color="teal"
-                    size="lg"
-                    radius="pill"
-                    className="w-full flex items-center justify-center gap-2 font-bold shadow-sm"
-                  >
-                    <span>Open in Peerbots App</span>
-                    <Icon name="externalLink" className="w-4 h-4" />
-                  </Button>
-                </a>
-                <Text size="xs" color="muted" className="mt-2">
-                  Loads this template straight into the controller
+            {/* Main Primary CTA Workflow */}
+            {contentAuthored ? (
+              <div className="p-3 bg-peerbots-teal/10 border border-peerbots-teal/20 rounded-xl">
+                <Text size="sm" className="font-semibold text-peerbots-darkteal">
+                  You authored this content
                 </Text>
               </div>
-            )}
-
-            {/* Acquire Paid / Non-authored Content */}
-            {!contentAuthored && !contentPurchased && !isFree && (
-              <div>
+            ) : contentPurchased ? (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center gap-2 text-emerald-800 font-semibold text-sm">
+                <svg className="w-5 h-5 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>In Your Library</span>
+              </div>
+            ) : (
+              /* Not authored and not yet acquired -> The main Acquire Content workflow */
+              <div className="space-y-2">
                 {user ? (
                   <Button
                     color="primary"
                     size="lg"
                     onClick={acquireContent}
-                    className="w-full font-bold"
+                    className="w-full font-bold shadow-sm"
                   >
-                    + Acquire Content
+                    + Acquire Content {isFree ? "(Free)" : ""}
                   </Button>
                 ) : (
-                  <div className="space-y-2">
-                    <Text size="xs" color="muted">
-                      Sign in to acquire this item
-                    </Text>
-                    <Button color="primary" size="lg" disabled className="w-full">
-                      + Acquire Content
-                    </Button>
-                  </div>
+                  <Button
+                    color="primary"
+                    size="lg"
+                    onClick={() => setAuthModalOpen(true)}
+                    className="w-full font-bold shadow-sm"
+                  >
+                    Sign In to Acquire {isFree ? "(Free)" : ""}
+                  </Button>
                 )}
+                <Text size="xs" color="muted">
+                  Adds this content package to your personal library
+                </Text>
               </div>
             )}
 
@@ -847,6 +873,15 @@ export default function ContentPage() {
       {copies.length > 0 && (
         <ContentRow content={copies} title="Your Saved Copies of this Template" />
       )}
+
+      {/* Sign In Dialog for unauthenticated users acquiring content */}
+      <Dialog
+        open={authModalOpen}
+        onOpenChange={setAuthModalOpen}
+        className="max-w-md p-0 border-none bg-transparent shadow-none"
+      >
+        <AuthForm mode={false} />
+      </Dialog>
     </div>
   );
 }
