@@ -683,43 +683,89 @@ export default function ContentPage() {
 
             {/* Main Primary CTA Workflow */}
             {contentAuthored ? (
-              <div className="p-3 bg-peerbots-teal/10 border border-peerbots-teal/20 rounded-xl">
-                <Text size="sm" className="font-semibold text-peerbots-darkteal">
-                  You authored this content
-                </Text>
+              <div className="space-y-2">
+                <div className="p-3 bg-peerbots-teal/10 border border-peerbots-teal/20 rounded-xl">
+                  <Text size="sm" className="font-semibold text-peerbots-darkteal">
+                    You authored this content
+                  </Text>
+                </div>
+                {contentId && (
+                  <div>
+                    <a
+                      href={`https://app.peerbots.org/dash/control?importMarketplaceContent=${contentId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-semibold text-peerbots-darkteal hover:text-peerbots-teal hover:underline inline-flex items-center gap-1.5 justify-center py-1 transition-colors"
+                    >
+                      <span>Open collection in Peerbots App</span>
+                      <Icon name="externalLink" className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                )}
               </div>
             ) : contentPurchased ? (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center gap-2 text-emerald-800 font-semibold text-sm">
-                <svg className="w-5 h-5 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>In Your Library</span>
+              <div className="space-y-3">
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center gap-2 text-emerald-800 font-semibold text-sm">
+                  <svg className="w-5 h-5 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>In Your Library</span>
+                </div>
+                {contentId && (
+                  <div>
+                    <a
+                      href={`https://app.peerbots.org/dash/control?importMarketplaceContent=${contentId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-semibold text-peerbots-darkteal hover:text-peerbots-teal hover:underline inline-flex items-center gap-1.5 justify-center py-1 transition-colors"
+                    >
+                      <span>Open collection in Peerbots App</span>
+                      <Icon name="externalLink" className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                )}
               </div>
             ) : (
               /* Not authored and not yet acquired -> The main Acquire Content workflow */
-              <div className="space-y-2">
-                {user ? (
-                  <Button
-                    color="primary"
-                    size="lg"
-                    onClick={acquireContent}
-                    className="w-full font-bold shadow-sm"
-                  >
-                    + Acquire Content {isFree ? "(Free)" : ""}
-                  </Button>
-                ) : (
-                  <Button
-                    color="primary"
-                    size="lg"
-                    onClick={() => setAuthModalOpen(true)}
-                    className="w-full font-bold shadow-sm"
-                  >
-                    Sign In to Acquire {isFree ? "(Free)" : ""}
-                  </Button>
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  {user ? (
+                    <Button
+                      color="primary"
+                      size="lg"
+                      onClick={acquireContent}
+                      className="w-full font-bold shadow-sm"
+                    >
+                      + Acquire Content {isFree ? "(Free)" : ""}
+                    </Button>
+                  ) : (
+                    <Button
+                      color="primary"
+                      size="lg"
+                      onClick={() => setAuthModalOpen(true)}
+                      className="w-full font-bold shadow-sm"
+                    >
+                      Sign In to Acquire {isFree ? "(Free)" : ""}
+                    </Button>
+                  )}
+                  <Text size="xs" color="muted">
+                    Adds this content package to your personal library
+                  </Text>
+                </div>
+
+                {contentId && (
+                  <div className="pt-1">
+                    <a
+                      href={`https://app.peerbots.org/dash/control?importMarketplaceContent=${contentId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-semibold text-peerbots-darkteal hover:text-peerbots-teal hover:underline inline-flex items-center gap-1.5 justify-center py-1 transition-colors"
+                    >
+                      <span>Try this collection</span>
+                      <Icon name="externalLink" className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
                 )}
-                <Text size="xs" color="muted">
-                  Adds this content package to your personal library
-                </Text>
               </div>
             )}
 
