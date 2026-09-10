@@ -8,10 +8,11 @@ import {
   where,
 } from "firebase/firestore";
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router";
+import { Button, Heading, Text } from "@peerbots/core";
 
 import ContentRow from "../components/contentRow";
 import { db } from "../../firebase";
-import { useNavigate, useParams } from "react-router";
 import { useFirebaseAuth } from "../state/AuthProvider";
 import { UserRecord } from "../types/user";
 import { Content } from "../types/content";
@@ -36,7 +37,6 @@ export default function ProfilePage() {
 
   const fetchUserDetails = async () => {
     if (username) {
-      // Look for someone with username username
       const usernameQuery = query(
         collection(db, "users"),
         where("username", "==", username)
@@ -50,7 +50,6 @@ export default function ProfilePage() {
         setUserInfo(userInfoByUsername);
         setUserId(userData.docs[0].id);
       } else {
-        // If they don't exist look for someone with id username
         const userRef = doc(db, "users", username);
         const userDataByRef = await getDoc(userRef);
         if (userDataByRef.exists()) {
@@ -61,7 +60,6 @@ export default function ProfilePage() {
           setUserInfo(userInfoById);
           setUserId(username);
         } else {
-          // Go to 404
           navigate("/not-found");
         }
       }
@@ -71,19 +69,16 @@ export default function ProfilePage() {
   const fetchUserContent = async () => {
     if (userId) {
       const userReference = doc(db, "users", userId);
-      // Get their content
       const contentQuery = query(
         collection(db, "content"),
         where("owner", "==", userReference),
         where("public", "==", true)
       );
       const contentData = await getDocs(contentQuery);
-      const contentFromDb = contentData.docs.map((doc) => {
-        return {
-          id: doc.id,
-          data: doc.data(),
-        };
-      }) as Content[];
+      const contentFromDb = contentData.docs.map((doc) => ({
+        id: doc.id,
+        data: doc.data(),
+      })) as Content[];
       setContent(contentFromDb);
     }
   };
@@ -113,7 +108,7 @@ export default function ProfilePage() {
   const updateUsername = async (e: FormEvent) => {
     e.preventDefault();
     if (userId && updateUsernameInput.current) {
-      const newUsername = updateUsernameInput.current.value;
+      const newUsername = updateUsernameInput.current.value.trim();
       const usernameQuery = query(
         collection(db, "users"),
         where("username", "==", newUsername)
@@ -121,7 +116,7 @@ export default function ProfilePage() {
       const usersWithUsername = await getDocs(usernameQuery);
       if (usersWithUsername.docs.length > 0) {
         setUsernameErrorMessage(
-          "Username is already taken. Try another one please."
+          "Username is already taken. Please try another."
         );
       } else {
         const userRef = doc(db, "users", userId);
@@ -145,7 +140,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (userInDb && userId && Object.keys(userInDb).length > 0) {
-      setViewerIsAuthor(userInDb.id == userId);
+      setViewerIsAuthor(userInDb.id === userId);
     } else {
       setViewerIsAuthor(false);
     }
@@ -154,184 +149,176 @@ export default function ProfilePage() {
   return (
     <div>
       {userInfo ? (
-        <>
-          <div className="bg-white shadow-md my-4 mx-2 p-8 rounded">
-            <div className="mb-8">
-              <img
-                src={
-                  userInfo.data.photoUrl ? userInfo.data.photoUrl : profilePic
-                }
-                className="rounded-full h-12 w-12 inline-block mr-4"
-              />
-              {userInfo.data.name}
+        <div className="space-y-6">
+          {/* User Profile Header Card */}
+          <div className="bg-white border border-gray-200/80 rounded-2xl p-6 sm:p-8 shadow-xs">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+              <div className="flex items-center gap-4">
+                <img
+                  src={userInfo.data.photoUrl || profilePic}
+                  alt={userInfo.data.name}
+                  className="rounded-full h-16 w-16 object-cover border-2 border-peerbots-teal/30"
+                />
+                <div>
+                  <Heading level={2} className="text-gray-900 font-bold">
+                    {userInfo.data.name}
+                  </Heading>
+                  {viewerIsAuthor && userInfo.data.username && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <Text size="sm" color="muted">
+                        @{userInfo.data.username}
+                      </Text>
+                      <span className="text-[11px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md font-medium">
+                        Private (not visible to others)
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {user && viewerIsAuthor && (
-                <button
-                  className="border border-gray-400 m-2 p-2 hover:bg-gray-400 hover:text-white rounded"
-                  onClick={() => {
-                    setEditingName(true);
-                  }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6 inline-block"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    color="neutral"
+                    size="sm"
+                    onClick={() => setEditingName(true)}
                   >
-                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                  </svg>{" "}
-                  Edit name
-                </button>
+                    Edit Name
+                  </Button>
+                  <Button
+                    variant="outline"
+                    color="neutral"
+                    size="sm"
+                    onClick={() => setEditingUsername(true)}
+                  >
+                    Edit Handle
+                  </Button>
+                  <Button
+                    variant="outline"
+                    color="neutral"
+                    size="sm"
+                    onClick={() => setEditingDescription(true)}
+                  >
+                    Edit Bio
+                  </Button>
+                </div>
               )}
             </div>
+
+            {/* Edit Name Form */}
             {userInDb && editingName && (
-              <div>
-                <form onSubmit={updateName}>
-                  <label>New Name</label>
+              <form onSubmit={updateName} className="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                  New Display Name
+                </label>
+                <div className="flex gap-2">
                   <input
                     type="text"
                     ref={updateNameInput}
-                    className="input-base form-input"
-                    name="updatedName"
                     defaultValue={userInDb.data.name}
-                  ></input>
-                  <button
-                    className="btn-primary"
-                    type="submit"
-                    onClick={updateName}
-                  >
-                    {" "}
-                    Update Name
-                  </button>
-                  <button
-                    onClick={() => {
-                      setEditingName(false);
-                    }}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-peerbots-teal"
+                  />
+                  <Button color="primary" size="sm" type="submit">
+                    Save
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    color="neutral"
+                    size="sm"
+                    type="button"
+                    onClick={() => setEditingName(false)}
                   >
                     Cancel
-                  </button>
-                </form>
-              </div>
+                  </Button>
+                </div>
+              </form>
             )}
-            <div>
-              {userInfo.data.description && (
-                <span>{userInfo.data.description}</span>
-              )}
-              {user && viewerIsAuthor && (
-                <button
-                  className="border border-gray-400 m-2 p-2 hover:bg-gray-400 hover:text-white rounded"
-                  onClick={() => {
-                    setEditingDescription(true);
-                  }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6 inline-block"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                  </svg>{" "}
-                  Edit description
-                </button>
-              )}
-            </div>
-            {userInDb && editingDescription && (
-              <div>
-                <form onSubmit={updateDescription}>
-                  <label>New Description</label>
-                  <textarea
-                    ref={updateDescriptionInput}
-                    className="input-base form-input"
-                    name="updatedDescription"
-                    defaultValue={userInDb.data.description}
-                  ></textarea>
-                  <button
-                    className="btn-primary"
-                    type="submit"
-                    onClick={updateDescription}
-                  >
-                    {" "}
-                    Update Description
-                  </button>
-                  <button
-                    onClick={() => {
-                      setEditingDescription(false);
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </form>
-              </div>
-            )}
-            <div>
-              {user && viewerIsAuthor && userInfo.data.username && (
-                <span>
-                  Username: <span>{userInfo.data.username}</span>
-                </span>
-              )}
-              {user && viewerIsAuthor && (
-                <button
-                  className="border border-gray-400 m-2 p-2 hover:bg-gray-400 hover:text-white rounded"
-                  onClick={() => {
-                    setEditingUsername(true);
-                  }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6 inline-block"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                  </svg>{" "}
-                  Edit username
-                </button>
-              )}
-            </div>
+
+            {/* Edit Username Form */}
             {userInDb && editingUsername && (
-              <div>
-                <form onSubmit={updateUsername}>
-                  <label>New username</label>
+              <form onSubmit={updateUsername} className="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                  Private Username / Calling Handle
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Used for Peerbots controller connections. This handle is private to your account and never displayed publicly.
+                </p>
+                <div className="flex gap-2 mb-2">
                   <input
                     type="text"
                     ref={updateUsernameInput}
-                    className="input-base form-input"
-                    name="updatedusername"
                     defaultValue={userInDb.data.username}
-                  ></input>
-                  <button
-                    className="btn-primary"
-                    type="submit"
-                    onClick={updateUsername}
-                  >
-                    {" "}
-                    Update username
-                  </button>
-                  <button
-                    onClick={() => {
-                      setEditingUsername(false);
-                    }}
+                    placeholder="Enter private handle"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-peerbots-teal"
+                  />
+                  <Button color="primary" size="sm" type="submit">
+                    Save
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    color="neutral"
+                    size="sm"
+                    type="button"
+                    onClick={() => setEditingUsername(false)}
                   >
                     Cancel
-                  </button>
-                  <span className="text-secondary text-sm mx-4">
+                  </Button>
+                </div>
+                {usernameErrorMessage && (
+                  <Text size="xs" color="error">
                     {usernameErrorMessage}
-                  </span>
-                </form>
-              </div>
+                  </Text>
+                )}
+              </form>
+            )}
+
+            {/* Bio / Description */}
+            {userInfo.data.description && (
+              <p className="text-gray-700 text-sm leading-relaxed mb-4">
+                {userInfo.data.description}
+              </p>
+            )}
+
+            {/* Edit Description Form */}
+            {userInDb && editingDescription && (
+              <form onSubmit={updateDescription} className="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                  New Bio
+                </label>
+                <textarea
+                  ref={updateDescriptionInput}
+                  defaultValue={userInDb.data.description}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-peerbots-teal mb-2"
+                />
+                <div className="flex gap-2">
+                  <Button color="primary" size="sm" type="submit">
+                    Save Bio
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    color="neutral"
+                    size="sm"
+                    type="button"
+                    onClick={() => setEditingDescription(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
             )}
           </div>
-          <div>
-            <div>
-              <ContentRow
-                content={content}
-                title={`Content authored by ${userInfo.data.name}`}
-              ></ContentRow>
-            </div>
-          </div>
-        </>
+
+          {/* User's Authored Content */}
+          <ContentRow
+            content={content}
+            title={`Content Authored by ${userInfo.data.name}`}
+            description="Public interaction templates published by this creator."
+          />
+        </div>
       ) : (
-        <></>
+        <div className="py-12 text-center text-gray-500">Loading profile...</div>
       )}
     </div>
   );

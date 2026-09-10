@@ -1,22 +1,26 @@
+import { Link } from "react-router";
+import { Button, Heading, Text } from "@peerbots/core";
 import peerbotBackpack from "../assets/peerbot-backpack.webp";
 
 export default function ErrorPage() {
   return (
-    // <div className="bg-white shadow-md my-4 mx-2 p-8 rounded w-full flex md:flex-row-reverse">
-    <div className="bg-white shadow-md my-4 mx-2 p-8 rounded w-full md:flex-row flex flex-col-reverse">
-      <div className="w-72 mt-4">
-        <img src={peerbotBackpack} />
-      </div>
-      <div className="text-xl md:mt-8">
-        <div className="mb-2">Sorry, it looks like an error occured.</div>
-        <div>
-          Try going to the{" "}
-          <a href="/" className="underline text-dark-primary">
-            home page
-          </a>{" "}
-          and starting over?
-        </div>
-      </div>
+    <div className="bg-white border border-gray-200/80 rounded-2xl p-8 sm:p-12 my-8 max-w-2xl mx-auto shadow-xs text-center flex flex-col items-center">
+      <img
+        src={peerbotBackpack}
+        alt="Unexpected error"
+        className="w-48 h-auto mb-6 drop-shadow-sm"
+      />
+      <Heading level={2} className="text-gray-900 font-bold mb-2">
+        Something Went Wrong
+      </Heading>
+      <Text size="md" color="muted" className="mb-6 max-w-md">
+        An unexpected error occurred while loading this page. Try refreshing or return to the marketplace homepage.
+      </Text>
+      <Link to="/">
+        <Button color="primary" size="md" radius="pill">
+          Back to Marketplace Home
+        </Button>
+      </Link>
     </div>
   );
 }

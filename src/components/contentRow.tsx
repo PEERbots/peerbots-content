@@ -8,6 +8,7 @@ import {
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
+import { Heading, Text } from "@peerbots/core";
 import ContentCard from "./contentCard";
 import { db } from "../../firebase";
 import { firebaseDoc } from "../types/firebase_helper_types";
@@ -101,44 +102,48 @@ export default function ContentRow({
     fetchContentRowDetails();
   }, [content]);
   return (
-    <>
-      <div className="bg-white shadow-md my-4 mx-2 p-8 rounded block">
-        {title && (
-          <div className="mb-6">
-            <h3 className="text-xl font-bold">{title}</h3>
-            {description && <p className="text-sm">{description}</p>}
-          </div>
-        )}
-        <div className="w-full grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-          {content &&
-            authors &&
-            content.map((eachContent) => (
-              <ContentCard
-                key={eachContent.id}
-                content={eachContent}
-                author={
-                  authors.filter((author) => {
-                    return author.id == eachContent.data.owner.id;
-                  })[0]
-                }
-                reviews={reviews.filter((review) => {
-                  return review.data.contentId == eachContent.id;
-                })}
-                tags={
-                  eachContent.data.tags
-                    ? tags.filter((tag) => {
-                        return eachContent.data.tags
-                          .map((t) => {
-                            return t.id;
-                          })
-                          .includes(tag.id);
-                      })
-                    : []
-                }
-              />
-            ))}
+    <section className="my-8">
+      {title && (
+        <div className="mb-5">
+          <Heading level={3} className="text-gray-900 font-bold">
+            {title}
+          </Heading>
+          {description && (
+            <Text size="sm" color="muted" className="mt-1">
+              {description}
+            </Text>
+          )}
         </div>
+      )}
+      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        {content &&
+          authors &&
+          content.map((eachContent) => (
+            <ContentCard
+              key={eachContent.id}
+              content={eachContent}
+              author={
+                authors.filter((author) => {
+                  return author.id == eachContent.data.owner.id;
+                })[0]
+              }
+              reviews={reviews.filter((review) => {
+                return review.data.contentId == eachContent.id;
+              })}
+              tags={
+                eachContent.data.tags
+                  ? tags.filter((tag) => {
+                      return eachContent.data.tags
+                        .map((t) => {
+                          return t.id;
+                        })
+                        .includes(tag.id);
+                    })
+                  : []
+              }
+            />
+          ))}
       </div>
-    </>
+    </section>
   );
 }
