@@ -1,8 +1,11 @@
-import { Heading, Text } from "@peerbots/core";
+import { useNavigate } from "react-router";
+import { Heading, SearchInput, Text } from "@peerbots/core";
 import LatestContentRow from "../components/latestContentRow";
 import TrustedContentRow from "../components/trustedContentRow";
 
 export default function HomePage() {
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-6">
       {/* Marketplace Hero Banner */}
@@ -14,6 +17,17 @@ export default function HomePage() {
           <Text size="md" color="muted">
             Explore community-crafted dialogue templates, behaviors, and activities for your social robot. Copy free interactions to your account and load them directly into the Peerbots Controller.
           </Text>
+          <div className="mt-4 md:hidden">
+            <SearchInput
+              placeholder="Search robot interactions, dialogues..."
+              onSearch={(query) => {
+                if (query.trim()) {
+                  navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+                }
+              }}
+              className="w-full"
+            />
+          </div>
         </div>
       </div>
 
